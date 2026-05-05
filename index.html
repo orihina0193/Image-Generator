@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v2</title>
+    <title>Abinoxx Engine v2.1</title>
     <style>
         :root {
             --bg: #0f1115;
             --card: #1a1d23;
-            --accent: #ff3b30; /* Chili Red */
+            --accent: #ff3b30;
             --text: #e0e0e0;
             --input: #252a33;
             --tag-bg: #2a2f38;
@@ -35,17 +35,9 @@
             box-sizing: border-box;
         }
 
-        h1 {
-            font-size: 1rem;
-            text-align: center;
-            letter-spacing: 2px;
-            color: var(--accent);
-            text-transform: uppercase;
-            margin-bottom: 20px;
-        }
+        h1 { font-size: 1rem; text-align: center; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 20px; }
 
-        /* 翻訳された英語が入る場所 */
-        textarea {
+        textarea, input {
             width: 100%;
             background: var(--input);
             border: 1px solid #333;
@@ -53,19 +45,11 @@
             padding: 12px;
             border-radius: 12px;
             font-size: 16px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             box-sizing: border-box;
-            resize: none;
         }
 
-        /* 味付けタグのスタイル */
-        .tag-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
+        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
         .tag {
             background: var(--tag-bg);
             border: 1px solid #444;
@@ -74,136 +58,85 @@
             border-radius: 20px;
             font-size: 13px;
             cursor: pointer;
-            transition: 0.2s;
         }
+        .tag.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        .tag.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        
+        .main-btn { grid-column: span 2; background: linear-gradient(135deg, #ff3b30, #a30000); color: white; padding: 16px; font-size: 1.1rem; margin-bottom: 5px; }
+        .sub-btn { background: #333; color: white; padding: 12px; font-size: 0.9rem; }
 
-        /* ボタン類 */
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        button {
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .main-btn {
-            grid-column: span 2;
-            background: linear-gradient(135deg, #ff3b30, #a30000);
-            color: white;
-            padding: 16px;
-            font-size: 1.1rem;
-        }
-
-        .sub-btn {
-            background: #333;
-            color: white;
-            padding: 10px;
-            font-size: 0.9rem;
-        }
-
-        /* 画像表示エリア */
-        #result-area {
-            margin-top: 20px;
-            text-align: center;
-            display: none;
-        }
-
-        #output-img {
-            width: 100%;
-            border-radius: 16px;
-            border: 1px solid #333;
-            margin-bottom: 10px;
-        }
-
-        .info-text {
-            font-size: 11px;
-            color: #666;
-            margin-top: 10px;
-        }
+        #result-area { margin-top: 20px; text-align: center; display: none; }
+        #output-img { width: 100%; border-radius: 16px; border: 1px solid #333; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Abinoxx Image Gen</h1>
+    <h1>Abinoxx Engine v2.1</h1>
 
-    <!-- ショートカットから渡されたプロンプトが入る -->
     <textarea id="mainPrompt" rows="3" placeholder="Waiting for prompt..."></textarea>
+    
+    <!-- シード値入力欄（復活！） -->
+    <input type="number" id="seedInput" placeholder="SEED (空ならランダム)">
 
-    <div style="font-size: 12px; color: #888; margin-bottom: 8px;">味付けを追加：</div>
     <div class="tag-container" id="tagList">
-        <!-- 育美さんお好みのタグを自由に増やせます -->
         <div class="tag" onclick="toggleTag(this, 'naive art')">ヘタウマ</div>
         <div class="tag" onclick="toggleTag(this, 'thick outlines')">太線</div>
         <div class="tag" onclick="toggleTag(this, 'flat color')">ベタ塗り</div>
-        <div class="tag" onclick="toggleTag(this, 'crayon drawing')">クレヨン</div>
         <div class="tag" onclick="toggleTag(this, 'pop and colorful')">ポップ</div>
-        <div class="tag" onclick="toggleTag(this, 'sticker style')">シール風</div>
         <div class="tag" onclick="toggleTag(this, 'white background')">白背景</div>
     </div>
 
     <div class="btn-group">
         <button class="main-btn" onclick="generate()">GENERATE</button>
-        <button class="sub-btn" onclick="location.reload()">Reset</button>
-        <button class="sub-btn" onclick="copySeed()">Copy Prompt</button>
+        <button class="sub-btn" onclick="generate()">RETRY</button> <!-- 再生成 -->
+        <button class="sub-btn" onclick="resetAll()">RESET</button> <!-- リセット -->
+        <button class="sub-btn" style="grid-column: span 2; margin-top: 5px;" onclick="copyFinalPrompt()">COPY PROMPT</button>
     </div>
 
     <div id="result-area">
         <img id="output-img" src="" alt="Generated">
         <div id="seed-display" style="font-family: monospace; font-size: 12px; color: #888;"></div>
-        <p class="info-text">※画像を長押しで保存できます</p>
     </div>
 </div>
 
 <script>
     let activeTags = [];
 
-    // 1. 起動時にURLパラメータ(?p=...)をチェック
     window.onload = () => {
         const params = new URLSearchParams(window.location.search);
         const p = params.get('p');
-        if (p) {
-            document.getElementById('mainPrompt').value = decodeURIComponent(p);
-        }
+        if (p) document.getElementById('mainPrompt').value = decodeURIComponent(p);
     };
 
-    // 2. タグの選択切り替え
     function toggleTag(el, tagValue) {
         el.classList.toggle('active');
-        if (el.classList.contains('active')) {
-            activeTags.push(tagValue);
-        } else {
-            activeTags = activeTags.filter(t => t !== tagValue);
+        if (el.classList.contains('active')) activeTags.push(tagValue);
+        else activeTags = activeTags.filter(t => t !== tagValue);
+    }
+
+    function resetAll() {
+        if(confirm('リセットしますか？')) {
+            location.href = location.pathname; // URLパラメータも消してリロード
         }
     }
 
-    // 3. 生成実行
     function generate() {
         const basePrompt = document.getElementById('mainPrompt').value;
         if (!basePrompt) return alert('プロンプトが空です');
 
-        // タグを合体
-        let finalPrompt = basePrompt;
-        if (activeTags.length > 0) {
-            finalPrompt += ", " + activeTags.join(", ");
+        let seed = document.getElementById('seedInput').value;
+        if (!seed) {
+            seed = Math.floor(Math.random() * 1000000000);
+            document.getElementById('seedInput').value = seed; // 生成したシードを表示
         }
 
-        const seed = Math.floor(Math.random() * 1000000000);
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?seed=${seed}&nologo=true`;
+        let finalPrompt = basePrompt;
+        if (activeTags.length > 0) finalPrompt += ", " + activeTags.join(", ");
 
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?seed=${seed}&nologo=true`;
         const img = document.getElementById('output-img');
         const area = document.getElementById('result-area');
         
@@ -211,13 +144,13 @@
         img.style.opacity = '0.5';
         img.src = url;
         document.getElementById('seed-display').innerText = `SEED: ${seed}`;
-
         img.onload = () => img.style.opacity = '1';
     }
 
-    function copySeed() {
-        const prompt = document.getElementById('mainPrompt').value;
-        navigator.clipboard.writeText(prompt).then(() => alert('プロンプトをコピーしました'));
+    function copyFinalPrompt() {
+        const base = document.getElementById('mainPrompt').value;
+        let final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
+        navigator.clipboard.writeText(final).then(() => alert('コピー完了！'));
     }
 </script>
 
