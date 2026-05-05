@@ -16,7 +16,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0; padding: 15px;
@@ -24,46 +24,40 @@
         }
 
         .container { width: 100%; max-width: 480px; background: var(--card); padding: 20px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); box-sizing: border-box; }
-        
         h1 { font-size: 0.9rem; text-align: center; letter-spacing: 3px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; }
 
         textarea, input {
             width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff;
             padding: 14px; border-radius: 16px; font-size: 16px; margin-bottom: 12px;
-            box-sizing: border-box; outline: none; transition: 0.2s;
+            box-sizing: border-box; outline: none;
         }
-        textarea:focus { border-color: var(--accent); }
 
         /* カテゴリータブ */
-        .tab-nav { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .tab-nav { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         .tab-nav::-webkit-scrollbar { display: none; }
-        .tab-item { font-size: 12px; padding: 6px 12px; background: #333; border-radius: 10px; white-space: nowrap; cursor: pointer; color: #aaa; }
+        .tab-item { font-size: 12px; padding: 8px 14px; background: #333; border-radius: 12px; white-space: nowrap; cursor: pointer; color: #aaa; flex-shrink: 0; }
         .tab-item.active { background: var(--accent); color: #fff; }
 
         /* タグコンテナ */
-        .tag-content { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 80px; }
+        .tag-content { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 120px; }
         .tag-content.active { display: flex; }
         
         .tag {
             background: var(--tag-bg); border: 1px solid #444; color: #ddd;
-            padding: 8px 14px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.2s;
+            padding: 8px 12px; border-radius: 12px; font-size: 11px; cursor: pointer; transition: 0.2s;
         }
         .tag.active { background: var(--tag-active); border-color: var(--tag-active); color: white; transform: scale(1.05); }
 
         /* ボタン */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { border: none; border-radius: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
-        
-        .gen-btn { grid-column: span 2; background: linear-gradient(135deg, #ff3b30, #b31d14); color: white; padding: 18px; font-size: 1.2rem; margin-bottom: 5px; box-shadow: 0 4px 15px rgba(255,59,48,0.3); }
-        .gen-btn:active { transform: scale(0.98); opacity: 0.9; }
-        
+        button { border: none; border-radius: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .gen-btn { grid-column: span 2; background: linear-gradient(135deg, #ff3b30, #b31d14); color: white; padding: 18px; font-size: 1.2rem; margin-bottom: 5px; }
         .sub-btn { background: #3a414d; color: white; padding: 14px; font-size: 0.9rem; }
         .copy-btn { grid-column: span 2; background: transparent; border: 1px solid #444; color: #888; margin-top: 5px; padding: 10px; font-size: 0.8rem; }
 
-        /* 結果エリア */
         #result-area { margin-top: 25px; text-align: center; display: none; width: 100%; }
         #output-img { width: 100%; border-radius: 20px; border: 2px solid #2d3440; margin-bottom: 12px; }
-        #seed-display { font-family: 'Courier New', monospace; font-size: 12px; color: #666; }
+        #seed-display { font-family: monospace; font-size: 11px; color: #666; }
     </style>
 </head>
 <body>
@@ -71,53 +65,84 @@
 <div class="container">
     <h1>Abinoxx Engine v3.0</h1>
 
-    <textarea id="mainPrompt" rows="3" placeholder="Waiting for prompt from Shortcut..."></textarea>
+    <!-- -->
+    <textarea id="mainPrompt" rows="3" placeholder="Waiting for prompt..."></textarea>
     <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
 
-    <!-- カテゴリー切り替え -->
-    <div class="tab-nav" id="tabNav">
-        <div class="tab-item active" onclick="showTab('art')">アート</div>
-        <div class="tab-item" onclick="showTab('illustration')">イラスト/漫画</div>
-        <div class="tab-item" onclick="showTab('material')">質感/特殊</div>
-        <div class="tab-item" onclick="showTab('camera')">構図</div>
+    <div class="tab-nav">
+        <div class="tab-item active" onclick="showTab('art')">Art/History</div>
+        <div class="tab-item" onclick="showTab('illustration')">Illustration</div>
+        <div class="tab-item" onclick="showTab('material')">Material/FX</div>
+        <div class="tab-item" onclick="showTab('camera')">Layout/Retro</div>
     </div>
 
-    <!-- アート系 -->
+    <!-- アート・歴史（1, 2, 4, 5, 8, 10, 18, 19, 21, 23, 25, 30, 31, 32, 33, 34, 40, 42, 43, 44, 45, 47, 48） -->
     <div id="art" class="tag-content active">
-        <div class="tag" onclick="toggleTag(this, 'naive art')">ヘタウマ</div>
-        <div class="tag" onclick="toggleTag(this, 'Ukiyo-e')">浮世絵</div>
-        <div class="tag" onclick="toggleTag(this, 'Impressionism')">印象派</div>
-        <div class="tag" onclick="toggleTag(this, 'Surrealism')">シュルレアリスム</div>
-        <div class="tag" onclick="toggleTag(this, 'Pop Art')">ポップアート</div>
-        <div class="tag" onclick="toggleTag(this, 'Cyberpunk')">サイバーパンク</div>
-        <div class="tag" onclick="toggleTag(this, 'Steampunk')">スチームパンク</div>
+        <div class="tag" onclick="toggleTag(this, 'Japanese woodblock print style, flat perspective')">浮世絵(4)</div>
+        <div class="tag" onclick="toggleTag(this, 'classical oil painting style, chiaroscuro lighting')">油絵(8)</div>
+        <div class="tag" onclick="toggleTag(this, 'fantasy illustration style, brush-paint texture')">厚塗りファンタジー(2)</div>
+        <div class="tag" onclick="toggleTag(this, 'high-fantasy digital art style, hyper-detailed')">ハイファンタジー(10)</div>
+        <div class="tag" onclick="toggleTag(this, 'watercolor painting style, dreamlike texture')">水彩画(5)</div>
+        <div class="tag" onclick="toggleTag(this, 'art nouveau style, floral patterns')">アール・ヌーヴォー(19)</div>
+        <div class="tag" onclick="toggleTag(this, 'Mesoamerican mural style, ancient iconography')">マヤ・アステカ(32)</div>
+        <div class="tag" onclick="toggleTag(this, 'Egyptian wall painting style')">エジプト壁画</div>
+        <div class="tag" onclick="toggleTag(this, 'etching style, fine engraved lines')">銅版画(18)</div>
+        <div class="tag" onclick="toggleTag(this, 'pastel art style, powdery strokes')">パステル画(21)</div>
+        <div class="tag" onclick="toggleTag(this, 'mosaic art style, ancient texture')">モザイク(23)</div>
+        <div class="tag" onclick="toggleTag(this, 'pop art style, halftone dots')">ポップアート(25)</div>
+        <div class="tag" onclick="toggleTag(this, 'medieval miniature painting style, gold leaf')">中世細密画(30)</div>
+        <div class="tag" onclick="toggleTag(this, 'African textile art style, geometric patterns')">アフリカ布画(31)</div>
+        <div class="tag" onclick="toggleTag(this, 'khokhloma folk art style, red and gold motifs')">ホフロマ塗装(33)</div>
+        <div class="tag" onclick="toggleTag(this, 'cubist style, multiple perspectives')">キュビスム(34)</div>
+        <div class="tag" onclick="toggleTag(this, 'post-impressionist style, bold brushstrokes')">ポスト印象派(40)</div>
+        <div class="tag" onclick="toggleTag(this, 'Chinese ink wash painting style, monochrome')">水墨画(42)</div>
+        <div class="tag" onclick="toggleTag(this, 'Indian miniature painting style, gold accents')">インド細密画(43)</div>
+        <div class="tag" onclick="toggleTag(this, 'Turkish ceramic art style, glazed tile texture')">トルコ陶器(44)</div>
+        <div class="tag" onclick="toggleTag(this, 'Ethiopian iconography style, sacred composition')">エチオピア宗教画(45)</div>
+        <div class="tag" onclick="toggleTag(this, 'neo-expressionist style, chaotic texture')">ネオ・エクスプレ(47)</div>
+        <div class="tag" onclick="toggleTag(this, 'optical art style, hypnotic layout')">オプアート(48)</div>
     </div>
 
-    <!-- イラスト系 -->
+    <!-- イラスト（1, 3, 6, 9, 13, 15, 16, 20, 24, 26, 28, 29, 35, 38, 39, 41, 46, 49, 50） -->
     <div id="illustration" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, 'Ghibli art style')">ジブリ風</div>
-        <div class="tag" onclick="toggleTag(this, '90s anime style')">90年代アニメ</div>
-        <div class="tag" onclick="toggleTag(this, 'Crayon drawing')">クレヨン画</div>
-        <div class="tag" onclick="toggleTag(this, 'Pixel art')">ドット絵</div>
-        <div class="tag" onclick="toggleTag(this, 'Sticker style, flat color')">シール風</div>
-        <div class="tag" onclick="toggleTag(this, 'Flat illustration')">フラット</div>
+        <div class="tag" onclick="toggleTag(this, 'anime-style, cel-shaded, sharp lineart')">アニメ(1)</div>
+        <div class="tag" onclick="toggleTag(this, 'black and white manga style, screentones')">マンガ(3)</div>
+        <div class="tag" onclick="toggleTag(this, 'Western cartoon style, exaggerated expressions')">カートゥーン(6)</div>
+        <div class="tag" onclick="toggleTag(this, 'lo-fi illustration style, grainy texture')">ローファイ(9)</div>
+        <div class="tag" onclick="toggleTag(this, 'pixel art style, 8-bit resolution')">ドット絵(13)</div>
+        <div class="tag" onclick="toggleTag(this, 'embroidery style, thread-like textures')">刺繍・ステッチ(15)</div>
+        <div class="tag" onclick="toggleTag(this, 'silhouette illustration style, flat black cutout')">影絵(16)</div>
+        <div class="tag" onclick="toggleTag(this, 'low-poly 3D style, visible polygons')">ローポリ3D(20)</div>
+        <div class="tag" onclick="toggleTag(this, 'paper collage style, layered textures')">コラージュ(24)</div>
+        <div class="tag" onclick="toggleTag(this, 'crayon drawing style, playful texture')">クレヨン画(26)</div>
+        <div class="tag" onclick="toggleTag(this, 'spray paint graffiti style, dripping paint')">グラフィティ(28)</div>
+        <div class="tag" onclick="toggleTag(this, 'stencil art style, crisp cutout edges')">ステンシル(29)</div>
+        <div class="tag" onclick="toggleTag(this, 'street pop art style, heavy outlines')">ストリートポップ(35)</div>
+        <div class="tag" onclick="toggleTag(this, 'cardboard cutout art style, layered textures')">段ボール(38)</div>
+        <div class="tag" onclick="toggleTag(this, 'unfinished canvas sketch style, pencil underdrawing')">下書き(39)</div>
+        <div class="tag" onclick="toggleTag(this, 'paper craft animation style, handmade')">ペーパークラフト(41)</div>
+        <div class="tag" onclick="toggleTag(this, 'conceptual art style, minimalism')">コンセプチュアル(46)</div>
+        <div class="tag" onclick="toggleTag(this, 'silkscreen print style, bold color layering')">シルクスクリーン(49)</div>
+        <div class="tag" onclick="toggleTag(this, 'mascot-style chibi illustration, thick lines')">ちびキャラ(50)</div>
     </div>
 
-    <!-- 質感系 -->
+    <!-- 質感・エフェクト（7, 11, 14, 27, 36, 37） -->
     <div id="material" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, 'Thick outlines')">太線</div>
-        <div class="tag" onclick="toggleTag(this, 'Embroidery style')">刺繍風</div>
-        <div class="tag" onclick="toggleTag(this, 'Cross stitch')">クロスステッチ</div>
-        <div class="tag" onclick="toggleTag(this, 'Glowing neon')">ネオン</div>
-        <div class="tag" onclick="toggleTag(this, 'Retro newspaper print')">新聞印刷風</div>
+        <div class="tag" onclick="toggleTag(this, 'cyberpunk art style, neon glow')">サイバーパンク(7)</div>
+        <div class="tag" onclick="toggleTag(this, 'glitch art style, digital noise')">グリッチ(11)</div>
+        <div class="tag" onclick="toggleTag(this, 'chalkboard drawing style, colored chalk')">黒板(14)</div>
+        <div class="tag" onclick="toggleTag(this, 'ink bleed style, liquid spreading')">インクにじみ(27)</div>
+        <div class="tag" onclick="toggleTag(this, 'woodcut relief style, carved texture')">木彫(36)</div>
+        <div class="tag" onclick="toggleTag(this, 'stained glass style, luminous panels')">ステンドグラス(37)</div>
     </div>
 
-    <!-- 構図系 -->
+    <!-- カメラ・レトロ（12, 17, 22） -->
     <div id="camera" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, 'White background')">白背景</div>
-        <div class="tag" onclick="toggleTag(this, 'Isometric view')">斜め俯瞰</div>
-        <div class="tag" onclick="toggleTag(this, 'Close-up shot')">アップ</div>
-        <div class="tag" onclick="toggleTag(this, 'Fish-eye lens')">魚眼レンズ</div>
+        <div class="tag" onclick="toggleTag(this, 'VHS tape aesthetic, scanlines')">VHSレトロ(12)</div>
+        <div class="tag" onclick="toggleTag(this, 'noir style, high contrast B&W')">ノワール(17)</div>
+        <div class="tag" onclick="toggleTag(this, 'instant film photo style, white frame')">ポラロイド(22)</div>
+        <div class="tag" onclick="toggleTag(this, 'white background')">白背景</div>
+        <div class="tag" onclick="toggleTag(this, 'isometric projection')">アイソメトリック</div>
     </div>
 
     <div class="btn-grid">
@@ -136,7 +161,6 @@
 <script>
     let activeTags = [];
 
-    // 起動時のURL処理
     window.onload = () => {
         const p = new URLSearchParams(window.location.search).get('p');
         if (p) document.getElementById('mainPrompt').value = decodeURIComponent(p);
@@ -156,7 +180,7 @@
     }
 
     function resetAll() {
-        if(confirm('Reset all settings?')) location.href = location.pathname;
+        if(confirm('Reset all?')) location.href = location.pathname;
     }
 
     function generate() {
@@ -188,6 +212,5 @@
         navigator.clipboard.writeText(final).then(() => alert('Copied!'));
     }
 </script>
-
 </body>
 </html>
