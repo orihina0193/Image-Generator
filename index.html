@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.2</title>
+    <title>Abinoxx Engine v3.3</title>
     <style>
         :root {
             --bg: #0f1115;
@@ -62,7 +62,7 @@
 <body>
 
 <div class="container">
-    <h1>Abinoxx Engine v3.2</h1>
+    <h1>Abinoxx Engine v3.3</h1>
 
     <textarea id="mainPrompt" rows="4" placeholder="Waiting for prompt..."></textarea>
     <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
@@ -75,7 +75,7 @@
         <div class="tab-item" onclick="showTab('camera')">Layout/Retro</div>
     </div>
 
-    <!-- お気に入り（付け足し機能付き） -->
+    <!-- お気に入り -->
     <div id="favorites" class="tag-content active">
         <div class="tag tag-special" onclick="appendMainPrompt('Game-style cartoon character, flat colors, bold lines, serious but meta-humorous atmosphere')">メタユーモア</div>
         <div class="tag tag-special" onclick="appendMainPrompt('Hand-drawn illustration, detailed texture, calm tones, distinctive character personality')">こだわり手描き</div>
@@ -84,7 +84,7 @@
         <div class="tag tag-special" onclick="appendMainPrompt('Tim Burton style, eerie but charming, long limbs, dark gothic colors, gothic atmosphere')">バートン風</div>
     </div>
 
-    <!-- アート・歴史（全復活） -->
+    <!-- アート・歴史（全リスト復元） -->
     <div id="art" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'Japanese woodblock print style, flat perspective, traditional palette, minimal shading, bold outlines')">日本画(4)</div>
         <div class="tag" onclick="toggleTag(this, 'classical oil painting style, chiaroscuro lighting, rich textures, realistic anatomy, canvas grain')">油絵(8)</div>
@@ -111,7 +111,7 @@
         <div class="tag" onclick="toggleTag(this, 'optical art style, black and white line patterns, geometric illusions, wave distortion, hypnotic layout')">オプアート(48)</div>
     </div>
 
-    <!-- イラスト（全復活） -->
+    <!-- イラスト（全リスト復元） -->
     <div id="illustration" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'anime-style, cel-shaded, vibrant color, sharp lineart')">アニメ(1)</div>
         <div class="tag" onclick="toggleTag(this, 'black and white manga style, bold inking, screentones, dynamic shading')">マンガ(3)</div>
@@ -134,7 +134,7 @@
         <div class="tag" onclick="toggleTag(this, 'mascot-style chibi illustration, thick vector lines, bold color blocks, emoji-like facial expressions')">ちびキャラ(50)</div>
     </div>
 
-    <!-- 質感・エフェクト（全復活） -->
+    <!-- 質感・エフェクト（全リスト復元） -->
     <div id="material" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'cyberpunk art style, neon glow, dark contrast, futuristic elements, vivid lighting effects')">サイバーパンク(7)</div>
         <div class="tag" onclick="toggleTag(this, 'glitch art style, chromatic aberration, pixel distortion, fragmented shapes, digital noise')">グリッチ(11)</div>
@@ -144,7 +144,7 @@
         <div class="tag" onclick="toggleTag(this, 'stained glass style, bold leading lines, luminous colored panels, sacred motif composition, radiant glow')">ステンドグラス(37)</div>
     </div>
 
-    <!-- レイアウト・レトロ（全復活） -->
+    <!-- レイアウト・レトロ（全リスト復元） -->
     <div id="camera" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'VHS tape aesthetic, analog noise, scanlines, muted colors, nostalgic blur')">VHS(12)</div>
         <div class="tag" onclick="toggleTag(this, 'noir style, high contrast black and white, deep shadows, cinematic lighting, moody tone')">ノワール(17)</div>
@@ -192,17 +192,14 @@
         }
     }
 
-    // 文字を消さずに、後ろに「, 」を付けて追加する
     function appendMainPrompt(text) {
         const promptArea = document.getElementById('mainPrompt');
         const currentVal = promptArea.value.trim();
-        
         if (currentVal === "") {
             promptArea.value = text;
         } else {
             promptArea.value = currentVal + ", " + text;
         }
-        
         const btn = event.currentTarget;
         const originalText = btn.innerText;
         btn.innerText = "ADDED!";
@@ -216,23 +213,32 @@
     function generate() {
         const base = document.getElementById('mainPrompt').value;
         if (!base) return alert('プロンプトを入力してください');
-        let seed = document.getElementById('seedInput').value || Math.floor(Math.random() * 1000000000);
-        document.getElementById('seedInput').value = seed;
+        
+        let seed = document.getElementById('seedInput').value;
+        if (!seed) {
+            seed = Math.floor(Math.random() * 1000000000);
+            document.getElementById('seedInput').value = seed;
+        }
+
         let final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
         const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&t=${Date.now()}`;
+        
         const area = document.getElementById('result-area');
         const img = document.getElementById('output-img');
+        
         area.style.display = 'block';
         img.style.opacity = '0.3';
         img.src = url;
         document.getElementById('seed-display').innerText = `SEED: ${seed}`;
+
         img.onload = () => img.style.opacity = '1';
         setTimeout(() => img.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
     }
 
+    // RETRYを確実に動かす修正
     function retry() {
-        document.getElementById('seedInput').value = '';
-        generate();
+        document.getElementById('seedInput').value = ''; // シードを空にして
+        generate(); // 再度生成を実行
     }
 
     function copyFinalPrompt() {
