@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.0</title>
+    <title>Abinoxx Engine v3.1</title>
     <style>
         :root {
             --bg: #0f1115;
@@ -13,6 +13,7 @@
             --input: #262c36;
             --tag-bg: #2d3440;
             --tag-active: #ff3b30;
+            --fav-accent: #ffcc00; /* お気に入り用のゴールド */
         }
 
         body {
@@ -37,6 +38,7 @@
         .tab-nav::-webkit-scrollbar { display: none; }
         .tab-item { font-size: 12px; padding: 8px 14px; background: #333; border-radius: 12px; white-space: nowrap; cursor: pointer; color: #aaa; flex-shrink: 0; }
         .tab-item.active { background: var(--accent); color: #fff; }
+        .tab-fav { color: var(--fav-accent); border: 1px solid var(--fav-accent); }
 
         /* タグコンテナ */
         .tag-content { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 120px; }
@@ -47,6 +49,7 @@
             padding: 8px 12px; border-radius: 12px; font-size: 11px; cursor: pointer; transition: 0.2s;
         }
         .tag.active { background: var(--tag-active); border-color: var(--tag-active); color: white; transform: scale(1.05); }
+        .tag-special { border-color: var(--fav-accent); color: var(--fav-accent); }
 
         /* ボタン */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -63,21 +66,30 @@
 <body>
 
 <div class="container">
-    <h1>Abinoxx Engine v3.0</h1>
+    <h1>Abinoxx Engine v3.1</h1>
 
-    <!-- -->
     <textarea id="mainPrompt" rows="3" placeholder="Waiting for prompt..."></textarea>
     <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
 
     <div class="tab-nav">
-        <div class="tab-item active" onclick="showTab('art')">Art/History</div>
+        <div class="tab-item active" onclick="showTab('favorites')">⭐ Favorites</div>
+        <div class="tab-item" onclick="showTab('art')">Art/History</div>
         <div class="tab-item" onclick="showTab('illustration')">Illustration</div>
         <div class="tab-item" onclick="showTab('material')">Material/FX</div>
         <div class="tab-item" onclick="showTab('camera')">Layout/Retro</div>
     </div>
 
-        <!-- アート・歴史（1, 2, 4, 5, 8, 10, 18, 19, 21, 23, 25, 30, 31, 32, 33, 34, 40, 42, 43, 44, 45, 47, 48） -->
-    <div id="art" class="tag-content active">
+    <!-- お気に入りセクション（LINEスタンプ仕様） -->
+    <div id="favorites" class="tag-content active">
+        <div class="tag tag-special" onclick="setMainPrompt('Game-style cartoon character, flat colors, bold lines, serious but meta-humorous atmosphere')">メタユーモア</div>
+        <div class="tag tag-special" onclick="setMainPrompt('Hand-drawn illustration, detailed texture, calm tones, distinctive character personality')">こだわり手描き</div>
+        <div class="tag tag-special" onclick="setMainPrompt('Realistic-leaning deformation, mature style, emphasized facial features, compact body balance')">リアル寄りデフォルメ</div>
+        <div class="tag tag-special" onclick="setMainPrompt('Simple bold lines, sharp outlines, rounded deformation, simple circular/oval shapes, humorous large eyes')">シンプル＆愛嬌</div>
+        <div class="tag tag-special" onclick="setMainPrompt('Tim Burton style, eerie but charming, long limbs, dark gothic colors, gothic atmosphere')">バートン風</div>
+    </div>
+
+    <!-- アート・歴史 -->
+    <div id="art" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'Japanese woodblock print style, flat perspective, traditional palette, minimal shading, bold outlines')">日本画(4)</div>
         <div class="tag" onclick="toggleTag(this, 'classical oil painting style, chiaroscuro lighting, rich textures, realistic anatomy, canvas grain')">油絵(8)</div>
         <div class="tag" onclick="toggleTag(this, 'fantasy illustration style, semi-realistic, brush-paint texture, soft lighting, high detail')">厚塗り(2)</div>
@@ -103,7 +115,7 @@
         <div class="tag" onclick="toggleTag(this, 'optical art style, black and white line patterns, geometric illusions, wave distortion, hypnotic layout')">オプアート(48)</div>
     </div>
 
-    <!-- イラスト（1, 3, 6, 9, 13, 15, 16, 20, 24, 26, 28, 29, 35, 38, 39, 41, 46, 49, 50） -->
+    <!-- イラスト -->
     <div id="illustration" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'anime-style, cel-shaded, vibrant color, sharp lineart')">アニメ(1)</div>
         <div class="tag" onclick="toggleTag(this, 'black and white manga style, bold inking, screentones, dynamic shading')">マンガ(3)</div>
@@ -136,7 +148,7 @@
         <div class="tag" onclick="toggleTag(this, 'stained glass style, bold leading lines, luminous colored panels, sacred motif composition, radiant glow')">ステンドグラス(37)</div>
     </div>
 
-        <!-- カメラ・レトロ・追加スタイル -->
+    <!-- カメラ・レトロ -->
     <div id="camera" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'VHS tape aesthetic, analog noise, scanlines, muted colors, nostalgic blur')">VHS(12)</div>
         <div class="tag" onclick="toggleTag(this, 'noir style, high contrast black and white, deep shadows, cinematic lighting, moody tone')">ノワール(17)</div>
@@ -149,7 +161,7 @@
 
     <div class="btn-grid">
         <button class="gen-btn" onclick="generate()">GENERATE</button>
-        <button class="sub-btn" onclick="generate()">RETRY</button>
+        <button class="sub-btn" onclick="retry()">RETRY</button>
         <button class="sub-btn" onclick="resetAll()">RESET</button>
         <button class="copy-btn" onclick="copyFinalPrompt()">FINAL PROMPT COPY</button>
     </div>
@@ -161,7 +173,7 @@
 </div>
 
 <script>
-        let activeTags = [];
+    let activeTags = [];
 
     window.onload = () => {
         const p = new URLSearchParams(window.location.search).get('p');
@@ -184,6 +196,16 @@
         }
     }
 
+    // お気に入りプロンプトを入力欄にガバッとセットする関数
+    function setMainPrompt(text) {
+        document.getElementById('mainPrompt').value = text;
+        // 完了したことがわかるようにちょっとしたフィードバック
+        const btn = event.currentTarget;
+        const originalText = btn.innerText;
+        btn.innerText = "SET OK!";
+        setTimeout(() => btn.innerText = originalText, 1000);
+    }
+
     function resetAll() {
         if(confirm('設定をリセットしますか？')) location.href = location.pathname;
     }
@@ -192,42 +214,33 @@
         const base = document.getElementById('mainPrompt').value;
         if (!base) return alert('プロンプトを入力してください');
 
-        // シード値の処理
         let seed = document.getElementById('seedInput').value;
-        // RETRYの時は入力を空にして呼び出す想定なので、空ならランダム生成
         if (!seed) {
             seed = Math.floor(Math.random() * 1000000000);
             document.getElementById('seedInput').value = seed;
         }
 
-        // プロンプト結合
         let final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        
-        // 画像URL生成（キャッシュ対策にタイムスタンプを付与）
         const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&t=${Date.now()}`;
         
         const area = document.getElementById('result-area');
         const img = document.getElementById('output-img');
         const seedDisp = document.getElementById('seed-display');
         
-        // 表示開始
         area.style.display = 'block';
-        img.style.opacity = '0.3'; // 読み込み中っぽく薄くする
+        img.style.opacity = '0.3';
         img.src = url;
         seedDisp.innerText = `SEED: ${seed}`;
 
-        // 画像の読み込みが完了したらハッキリ表示させる
         img.onload = () => {
             img.style.opacity = '1';
         };
         
-        // iPhoneでスクロールを自動で画像位置に持っていく（ポチポチした後に楽）
         setTimeout(() => {
             img.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 300);
     }
 
-    // RETRYボタン専用の処理（シードを空にしてから生成）
     function retry() {
         document.getElementById('seedInput').value = '';
         generate();
