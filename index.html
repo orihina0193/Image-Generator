@@ -75,6 +75,7 @@
         <div class="tab-item" onclick="showTab('camera')">Layout/Retro</div>
     </div>
 
+    <!-- お気に入り（付け足し機能付き） -->
     <div id="favorites" class="tag-content active">
         <div class="tag tag-special" onclick="appendMainPrompt('Game-style cartoon character, flat colors, bold lines, serious but meta-humorous atmosphere')">メタユーモア</div>
         <div class="tag tag-special" onclick="appendMainPrompt('Hand-drawn illustration, detailed texture, calm tones, distinctive character personality')">こだわり手描き</div>
@@ -83,28 +84,75 @@
         <div class="tag tag-special" onclick="appendMainPrompt('Tim Burton style, eerie but charming, long limbs, dark gothic colors, gothic atmosphere')">バートン風</div>
     </div>
 
-    <!-- 他のセクション（省略不可のため統合したまま） -->
+    <!-- アート・歴史（全復活） -->
     <div id="art" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'Japanese woodblock print style, flat perspective, traditional palette, minimal shading, bold outlines')">日本画(4)</div>
         <div class="tag" onclick="toggleTag(this, 'classical oil painting style, chiaroscuro lighting, rich textures, realistic anatomy, canvas grain')">油絵(8)</div>
+        <div class="tag" onclick="toggleTag(this, 'fantasy illustration style, semi-realistic, brush-paint texture, soft lighting, high detail')">厚塗り(2)</div>
+        <div class="tag" onclick="toggleTag(this, 'high-fantasy digital art style, hyper-detailed, glowing effects, surreal lighting, ornate design')">ハイファン(10)</div>
+        <div class="tag" onclick="toggleTag(this, 'watercolor painting style, pastel tones, soft blending, gentle brushstrokes, dreamlike texture')">水彩画(5)</div>
+        <div class="tag" onclick="toggleTag(this, 'art nouveau style, flowing lines, floral patterns, soft pastel colors, decorative framing')">アールヌーヴォー(19)</div>
+        <div class="tag" onclick="toggleTag(this, 'Mesoamerican mural style, flat symbolic figures, carved-stone texture, ancient iconography, earthy tones')">マヤアステカ(32)</div>
         <div class="tag" onclick="toggleTag(this, 'Egyptian wall painting style, flat symbolic figures, ancient iconography, earthy tones, stone texture')">エジプト壁画</div>
-        <!-- 他のタグ... -->
+        <div class="tag" onclick="toggleTag(this, 'etching style, fine engraved lines, sepia tones, antique print texture, crosshatching detail')">銅版画(18)</div>
+        <div class="tag" onclick="toggleTag(this, 'pastel art style, soft textures, powdery strokes, warm hues, gentle gradients')">パステル(21)</div>
+        <div class="tag" onclick="toggleTag(this, 'mosaic art style, tile patterns, tessellated shapes, vibrant inlaid colors, ancient texture')">モザイク(23)</div>
+        <div class="tag" onclick="toggleTag(this, 'pop art style, bold flat colors, halftone dots, repetition, graphic comic layout')">ポップアート(25)</div>
+        <div class="tag" onclick="toggleTag(this, 'medieval miniature painting style, gold leaf effect, ornamental framing, flat perspective, fine linework')">中世細密画(30)</div>
+        <div class="tag" onclick="toggleTag(this, 'African textile art style, bold geometric patterns, earthy textures, primary colors, fabric motif simulation')">アフリカ布(31)</div>
+        <div class="tag" onclick="toggleTag(this, 'khokhloma folk art style, swirling red and gold floral motifs, black lacquer background, ornamental patterns')">ホフロマ(33)</div>
+        <div class="tag" onclick="toggleTag(this, 'cubist style, fractured forms, multiple perspectives, angular geometry, muted color blocks')">キュビスム(34)</div>
+        <div class="tag" onclick="toggleTag(this, 'post-impressionist style, bold brushstrokes, vivid but tempered palette, structured composition, painterly forms')">ポスト印象派(40)</div>
+        <div class="tag" onclick="toggleTag(this, 'Chinese ink wash painting style, monochrome, expressive brushwork, wet-on-wet textures, poetic composition')">水墨画(42)</div>
+        <div class="tag" onclick="toggleTag(this, 'Indian miniature painting style, intricate details, gold accents, flat composition, decorative borders')">インド細密画(43)</div>
+        <div class="tag" onclick="toggleTag(this, 'Turkish ceramic art style, blue-and-white motifs, floral symmetry, glazed tile texture, radial patterning')">トルコ陶器(44)</div>
+        <div class="tag" onclick="toggleTag(this, 'Ethiopian iconography style, bold outlines, symbolic expressions, primary colors, sacred composition')">エチオピア宗教画(45)</div>
+        <div class="tag" onclick="toggleTag(this, 'neo-expressionist style, aggressive brushwork, distorted proportions, emotionally charged colors, chaotic texture')">ネオエクス(47)</div>
+        <div class="tag" onclick="toggleTag(this, 'optical art style, black and white line patterns, geometric illusions, wave distortion, hypnotic layout')">オプアート(48)</div>
     </div>
 
+    <!-- イラスト（全復活） -->
     <div id="illustration" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'anime-style, cel-shaded, vibrant color, sharp lineart')">アニメ(1)</div>
+        <div class="tag" onclick="toggleTag(this, 'black and white manga style, bold inking, screentones, dynamic shading')">マンガ(3)</div>
         <div class="tag" onclick="toggleTag(this, 'Western cartoon style, bold outlines, bright saturated colors, exaggerated expressions')">カートゥーン(6)</div>
-        <!-- 他のタグ... -->
+        <div class="tag" onclick="toggleTag(this, 'lo-fi illustration style, muted pastel palette, grainy texture, nostalgic tone, sketchy linework')">ローファイ(9)</div>
+        <div class="tag" onclick="toggleTag(this, 'pixel art style, 8-bit resolution, limited color palette, grid-based texture, retro game look')">ドット絵(13)</div>
+        <div class="tag" onclick="toggleTag(this, 'embroidery style, thread-like textures, fabric background, cross-stitch pixelation')">刺繍ステッチ(15)</div>
+        <div class="tag" onclick="toggleTag(this, 'silhouette illustration style, flat black cutout shapes, glowing backlight, minimalistic forms')">影絵(16)</div>
+        <div class="tag" onclick="toggleTag(this, 'low-poly 3D style, flat shading, visible polygons, geometric forms, early CG look')">ローポリ(20)</div>
+        <div class="tag" onclick="toggleTag(this, 'paper collage style, torn paper edges, layered textures, mixed media fragments, textured depth')">コラージュ(24)</div>
+        <div class="tag" onclick="toggleTag(this, 'crayon drawing style, thick wavy lines, vibrant primary colors, playful texture')">クレヨン(26)</div>
+        <div class="tag" onclick="toggleTag(this, 'spray paint graffiti style, stencil edges, dripping paint, high contrast colors, urban wall texture')">グラフィティ(28)</div>
+        <div class="tag" onclick="toggleTag(this, 'stencil art style, flat shapes, limited color palette, crisp cutout edges, geometric composition')">ステンシル(29)</div>
+        <div class="tag" onclick="toggleTag(this, 'street pop art style, graphic shapes, high contrast colors, heavy outlines, playful iconography')">ストポップ(35)</div>
+        <div class="tag" onclick="toggleTag(this, 'cardboard cutout art style, layered brown textures, hand-cut look, rough edges, shadowed depth')">段ボール(38)</div>
+        <div class="tag" onclick="toggleTag(this, 'unfinished canvas sketch style, pencil underdrawing, visible grid lines, incomplete brushwork, work-in-progress texture')">下書き(39)</div>
+        <div class="tag" onclick="toggleTag(this, 'paper craft animation style, layered paper textures, visible folds, pastel colors, handmade appearance')">ペーパークラフト(41)</div>
+        <div class="tag" onclick="toggleTag(this, 'conceptual art style, minimalism, symbolic placement, clean layout, typographic elements')">コンセプト(46)</div>
+        <div class="tag" onclick="toggleTag(this, 'silkscreen print style, bold color layering, flat shading, clean shapes, limited palette')">シルクスクリーン(49)</div>
+        <div class="tag" onclick="toggleTag(this, 'mascot-style chibi illustration, thick vector lines, bold color blocks, emoji-like facial expressions')">ちびキャラ(50)</div>
     </div>
 
+    <!-- 質感・エフェクト（全復活） -->
     <div id="material" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'cyberpunk art style, neon glow, dark contrast, futuristic elements, vivid lighting effects')">サイバーパンク(7)</div>
-        <!-- 他のタグ... -->
+        <div class="tag" onclick="toggleTag(this, 'glitch art style, chromatic aberration, pixel distortion, fragmented shapes, digital noise')">グリッチ(11)</div>
+        <div class="tag" onclick="toggleTag(this, 'chalkboard drawing style, colored chalk texture, black background, dusty strokes, soft edges')">黒板(14)</div>
+        <div class="tag" onclick="toggleTag(this, 'ink bleed style, liquid spreading effects, abstract shapes, organic textures, experimental look')">インクにじみ(27)</div>
+        <div class="tag" onclick="toggleTag(this, 'woodcut relief style, carved texture, natural woodgrain, deep shadows, tactile surface')">木彫(36)</div>
+        <div class="tag" onclick="toggleTag(this, 'stained glass style, bold leading lines, luminous colored panels, sacred motif composition, radiant glow')">ステンドグラス(37)</div>
     </div>
 
+    <!-- レイアウト・レトロ（全復活） -->
     <div id="camera" class="tag-content">
+        <div class="tag" onclick="toggleTag(this, 'VHS tape aesthetic, analog noise, scanlines, muted colors, nostalgic blur')">VHS(12)</div>
+        <div class="tag" onclick="toggleTag(this, 'noir style, high contrast black and white, deep shadows, cinematic lighting, moody tone')">ノワール(17)</div>
+        <div class="tag" onclick="toggleTag(this, 'instant film photo style, faded colors, white frame, slight blur, vintage aesthetic')">ポラロイド(22)</div>
         <div class="tag" onclick="toggleTag(this, 'Gekiga style, dramatic shading, intense masculine lines, retro Japanese action manga aesthetic')">劇画調</div>
         <div class="tag" onclick="toggleTag(this, 'Minimalist hand-drawn doodle, quirky illustration, intentional simple linework')">ヘタウマ</div>
+        <div class="tag" onclick="toggleTag(this, 'white background, clean studio lighting, high key')">白背景</div>
+        <div class="tag" onclick="toggleTag(this, 'isometric projection')">アイソメトリック</div>
     </div>
 
     <div class="btn-grid">
@@ -144,7 +192,7 @@
         }
     }
 
-    // 既存の文字を消さずに、後ろに「, 」を付けて追加する
+    // 文字を消さずに、後ろに「, 」を付けて追加する
     function appendMainPrompt(text) {
         const promptArea = document.getElementById('mainPrompt');
         const currentVal = promptArea.value.trim();
@@ -152,7 +200,6 @@
         if (currentVal === "") {
             promptArea.value = text;
         } else {
-            // すでに何か入っていたらカンマで繋ぐ
             promptArea.value = currentVal + ", " + text;
         }
         
