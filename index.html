@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Abinoxx Image Gen</title>
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: #1a1d23;
+            --accent-color: #ff3b30; /* Chili Red風 */
+            --text-color: #e0e0e0;
+            --input-bg: #252a33;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 2px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        /* モデル切り替えスイッチ */
+        .mode-selector {
+            display: flex;
+            background: var(--input-bg);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            border: none;
+            background: none;
+            color: #888;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .mode-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* 入力エリア */
+        input, textarea {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid #333;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .seed-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* ボタン */
+        button.main-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff3b30, #a30000);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);
+        }
+
+        /* プレビューエリア */
+        #preview-container {
+            margin-top: 25px;
+            text-align: center;
+            display: none;
+        }
+
+        #output-img {
+            width: 100%;
+            border-radius: 16px;
+            border: 2px solid #333;
+        }
+
+        .seed-display {
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            color: #aaa;
+        }
+
+        /* 下部アクションボタン */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            background: #2a2f38;
+            color: white;
+            cursor: pointer;
+        }
+
+        .save-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Abinoxx Engine</h1>
+
+    <div class="mode-selector">
+        <button id="mode-real" class="mode-btn active" onclick="setMode('real')">📸 リアル</button>
+        <button id="mode-art" class="mode-btn" onclick="setMode('art')">🎨 イラスト</button>
+    </div>
+
+    <textarea id="prompt" rows="3" placeholder="プロンプトを入力（例: red mini cooper, crayon drawing...）"></textarea>
+    
+    <div class="seed-group">
+        <input id="seed" type="number" placeholder="シード値 (空ならランダム)">
+        <button class="action-btn" onclick="clearSeed()" style="width: 60px;">Clr</button>
+    </div>
+
+    <button class="main-btn" onclick="generate()">GENERATE</button>
+
+    <div id="preview-container">
+        <img id="output-img" src="" alt="Generated image">
+        <div class="seed-display" id="display-seed"></div>
+        
+        <div class="actions">
+            <button class="action-btn" onclick="generate()">Retry</button>
+            <button class="action-btn" onclick="resetAll()" style="color: #ff4444;">Clear All</button>
+        </div>
+        <p class="save-info">※気に入ったら画像を長押しして保存してください</p>
+    </div>
+</div>
+
+<script>
+    let currentMode = 'real';
+
+    // ページ読み込み時に前回のプロンプトを復元
+    window.onload = () => {
+        if(localStorage.getItem('lastPrompt')) {
+            document.getElementById('prompt').value = localStorage.getItem('lastPrompt');
+        }
+    };
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('mode-real').classList.toggle('active', mode === 'real');
+        document.getElementById('mode-art').classList.toggle('active', mode === 'art');
+    }
+
+    function clearSeed() {
+        document.getElementById('seed').value = '';
+    }
+
+    function resetAll() {
+        if(confirm('入力をすべてクリアしますか？')) {
+            document.getElementById('prompt').value = '';
+            document.getElementById('seed').value = '';
+            document.getElementById('preview-container').style.display = 'none';
+            localStorage.removeItem('lastPrompt');
+        }
+    }
+
+    async function generate() {
+        const prompt = document.getElementById('prompt').value;
+        if (!prompt) return alert('プロンプトを入力してください');
+
+        let seed = document.getElementById('seed').value;
+        if (!seed) {
+            seed = Math.floor(Math.random() * 1000000000);
+            document.getElementById('seed').value = seed;
+        }
+
+        // 保存用
+        localStorage.setItem('lastPrompt', prompt);
+
+        const img = document.getElementById('output-img');
+        const container = document.getElementById('preview-container');
+        const seedDisp = document.getElementById('display-seed');
+
+        // URL組み立て
+        let url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&nologo=true`;
+        if (currentMode === 'real') {
+            url += '&model=flux';
+        }
+
+        // 表示処理
+        container.style.display = 'block';
+        img.style.opacity = '0.5'; // 生成中っぽく
+        img.src = url;
+        seedDisp.innerText = `SEED: ${seed}`;
+
+        img.onload = () => {
+            img.style.opacity = '1';
+        };
+    }
+</script>
+
+</body>
+</html>
