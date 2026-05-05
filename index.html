@@ -159,7 +159,7 @@
 </div>
 
 <script>
-    let activeTags = [];
+        let activeTags = [];
 
     window.onload = () => {
         const p = new URLSearchParams(window.location.search).get('p');
@@ -175,41 +175,66 @@
 
     function toggleTag(el, tagValue) {
         el.classList.toggle('active');
-        if (el.classList.contains('active')) activeTags.push(tagValue);
-        else activeTags = activeTags.filter(t => t !== tagValue);
+        if (el.classList.contains('active')) {
+            activeTags.push(tagValue);
+        } else {
+            activeTags = activeTags.filter(t => t !== tagValue);
+        }
     }
 
     function resetAll() {
-        if(confirm('Reset all?')) location.href = location.pathname;
+        if(confirm('設定をリセットしますか？')) location.href = location.pathname;
     }
 
     function generate() {
         const base = document.getElementById('mainPrompt').value;
-        if (!base) return alert('Prompt is empty');
+        if (!base) return alert('プロンプトを入力してください');
 
+        // シード値の処理
         let seed = document.getElementById('seedInput').value;
+        // RETRYの時は入力を空にして呼び出す想定なので、空ならランダム生成
         if (!seed) {
             seed = Math.floor(Math.random() * 1000000000);
             document.getElementById('seedInput').value = seed;
         }
 
+        // プロンプト結合
         let final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true`;
+        
+        // 画像URL生成（キャッシュ対策にタイムスタンプを付与）
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&t=${Date.now()}`;
         
         const area = document.getElementById('result-area');
         const img = document.getElementById('output-img');
+        const seedDisp = document.getElementById('seed-display');
         
+        // 表示開始
         area.style.display = 'block';
-        img.style.opacity = '0.4';
+        img.style.opacity = '0.3'; // 読み込み中っぽく薄くする
         img.src = url;
-        document.getElementById('seed-display').innerText = `SEED: ${seed}`;
-        img.onload = () => img.style.opacity = '1';
+        seedDisp.innerText = `SEED: ${seed}`;
+
+        // 画像の読み込みが完了したらハッキリ表示させる
+        img.onload = () => {
+            img.style.opacity = '1';
+        };
+        
+        // iPhoneでスクロールを自動で画像位置に持っていく（ポチポチした後に楽）
+        setTimeout(() => {
+            img.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+    }
+
+    // RETRYボタン専用の処理（シードを空にしてから生成）
+    function retry() {
+        document.getElementById('seedInput').value = '';
+        generate();
     }
 
     function copyFinalPrompt() {
         const base = document.getElementById('mainPrompt').value;
         let final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        navigator.clipboard.writeText(final).then(() => alert('Copied!'));
+        navigator.clipboard.writeText(final).then(() => alert('コピーしました！'));
     }
 </script>
 </body>
