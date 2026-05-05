@@ -3,113 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v2.1</title>
+    <title>Abinoxx Engine v3.0</title>
     <style>
         :root {
             --bg: #0f1115;
-            --card: #1a1d23;
-            --accent: #ff3b30;
-            --text: #e0e0e0;
-            --input: #252a33;
-            --tag-bg: #2a2f38;
+            --card: #1b1e24;
+            --accent: #ff3b30; /* Chili Red */
+            --text: #efefef;
+            --input: #262c36;
+            --tag-bg: #2d3440;
+            --tag-active: #ff3b30;
         }
 
         body {
-            font-family: -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px;
+            margin: 0; padding: 15px;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        .container {
-            width: 100%;
-            max-width: 480px;
-            background: var(--card);
-            padding: 20px;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            box-sizing: border-box;
-        }
-
-        h1 { font-size: 1rem; text-align: center; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 20px; }
+        .container { width: 100%; max-width: 480px; background: var(--card); padding: 20px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); box-sizing: border-box; }
+        
+        h1 { font-size: 0.9rem; text-align: center; letter-spacing: 3px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; }
 
         textarea, input {
-            width: 100%;
-            background: var(--input);
-            border: 1px solid #333;
-            color: #fff;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 16px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
+            width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff;
+            padding: 14px; border-radius: 16px; font-size: 16px; margin-bottom: 12px;
+            box-sizing: border-box; outline: none; transition: 0.2s;
         }
+        textarea:focus { border-color: var(--accent); }
 
-        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .tag {
-            background: var(--tag-bg);
-            border: 1px solid #444;
-            color: #ccc;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .tag.active { background: var(--accent); color: white; border-color: var(--accent); }
+        /* カテゴリータブ */
+        .tab-nav { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .tab-nav::-webkit-scrollbar { display: none; }
+        .tab-item { font-size: 12px; padding: 6px 12px; background: #333; border-radius: 10px; white-space: nowrap; cursor: pointer; color: #aaa; }
+        .tab-item.active { background: var(--accent); color: #fff; }
 
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        /* タグコンテナ */
+        .tag-content { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 80px; }
+        .tag-content.active { display: flex; }
         
-        .main-btn { grid-column: span 2; background: linear-gradient(135deg, #ff3b30, #a30000); color: white; padding: 16px; font-size: 1.1rem; margin-bottom: 5px; }
-        .sub-btn { background: #333; color: white; padding: 12px; font-size: 0.9rem; }
+        .tag {
+            background: var(--tag-bg); border: 1px solid #444; color: #ddd;
+            padding: 8px 14px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.2s;
+        }
+        .tag.active { background: var(--tag-active); border-color: var(--tag-active); color: white; transform: scale(1.05); }
 
-        #result-area { margin-top: 20px; text-align: center; display: none; }
-        #output-img { width: 100%; border-radius: 16px; border: 1px solid #333; margin-bottom: 10px; }
+        /* ボタン */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { border: none; border-radius: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
+        
+        .gen-btn { grid-column: span 2; background: linear-gradient(135deg, #ff3b30, #b31d14); color: white; padding: 18px; font-size: 1.2rem; margin-bottom: 5px; box-shadow: 0 4px 15px rgba(255,59,48,0.3); }
+        .gen-btn:active { transform: scale(0.98); opacity: 0.9; }
+        
+        .sub-btn { background: #3a414d; color: white; padding: 14px; font-size: 0.9rem; }
+        .copy-btn { grid-column: span 2; background: transparent; border: 1px solid #444; color: #888; margin-top: 5px; padding: 10px; font-size: 0.8rem; }
+
+        /* 結果エリア */
+        #result-area { margin-top: 25px; text-align: center; display: none; width: 100%; }
+        #output-img { width: 100%; border-radius: 20px; border: 2px solid #2d3440; margin-bottom: 12px; }
+        #seed-display { font-family: 'Courier New', monospace; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Abinoxx Engine v2.1</h1>
+    <h1>Abinoxx Engine v3.0</h1>
 
-    <textarea id="mainPrompt" rows="3" placeholder="Waiting for prompt..."></textarea>
-    
-    <!-- シード値入力欄（復活！） -->
-    <input type="number" id="seedInput" placeholder="SEED (空ならランダム)">
+    <textarea id="mainPrompt" rows="3" placeholder="Waiting for prompt from Shortcut..."></textarea>
+    <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
 
-    <div class="tag-container" id="tagList">
-        <div class="tag" onclick="toggleTag(this, 'naive art')">ヘタウマ</div>
-        <div class="tag" onclick="toggleTag(this, 'thick outlines')">太線</div>
-        <div class="tag" onclick="toggleTag(this, 'flat color')">ベタ塗り</div>
-        <div class="tag" onclick="toggleTag(this, 'pop and colorful')">ポップ</div>
-        <div class="tag" onclick="toggleTag(this, 'white background')">白背景</div>
+    <!-- カテゴリー切り替え -->
+    <div class="tab-nav" id="tabNav">
+        <div class="tab-item active" onclick="showTab('art')">アート</div>
+        <div class="tab-item" onclick="showTab('illustration')">イラスト/漫画</div>
+        <div class="tab-item" onclick="showTab('material')">質感/特殊</div>
+        <div class="tab-item" onclick="showTab('camera')">構図</div>
     </div>
 
-    <div class="btn-group">
-        <button class="main-btn" onclick="generate()">GENERATE</button>
-        <button class="sub-btn" onclick="generate()">RETRY</button> <!-- 再生成 -->
-        <button class="sub-btn" onclick="resetAll()">RESET</button> <!-- リセット -->
-        <button class="sub-btn" style="grid-column: span 2; margin-top: 5px;" onclick="copyFinalPrompt()">COPY PROMPT</button>
+    <!-- アート系 -->
+    <div id="art" class="tag-content active">
+        <div class="tag" onclick="toggleTag(this, 'naive art')">ヘタウマ</div>
+        <div class="tag" onclick="toggleTag(this, 'Ukiyo-e')">浮世絵</div>
+        <div class="tag" onclick="toggleTag(this, 'Impressionism')">印象派</div>
+        <div class="tag" onclick="toggleTag(this, 'Surrealism')">シュルレアリスム</div>
+        <div class="tag" onclick="toggleTag(this, 'Pop Art')">ポップアート</div>
+        <div class="tag" onclick="toggleTag(this, 'Cyberpunk')">サイバーパンク</div>
+        <div class="tag" onclick="toggleTag(this, 'Steampunk')">スチームパンク</div>
+    </div>
+
+    <!-- イラスト系 -->
+    <div id="illustration" class="tag-content">
+        <div class="tag" onclick="toggleTag(this, 'Ghibli art style')">ジブリ風</div>
+        <div class="tag" onclick="toggleTag(this, '90s anime style')">90年代アニメ</div>
+        <div class="tag" onclick="toggleTag(this, 'Crayon drawing')">クレヨン画</div>
+        <div class="tag" onclick="toggleTag(this, 'Pixel art')">ドット絵</div>
+        <div class="tag" onclick="toggleTag(this, 'Sticker style, flat color')">シール風</div>
+        <div class="tag" onclick="toggleTag(this, 'Flat illustration')">フラット</div>
+    </div>
+
+    <!-- 質感系 -->
+    <div id="material" class="tag-content">
+        <div class="tag" onclick="toggleTag(this, 'Thick outlines')">太線</div>
+        <div class="tag" onclick="toggleTag(this, 'Embroidery style')">刺繍風</div>
+        <div class="tag" onclick="toggleTag(this, 'Cross stitch')">クロスステッチ</div>
+        <div class="tag" onclick="toggleTag(this, 'Glowing neon')">ネオン</div>
+        <div class="tag" onclick="toggleTag(this, 'Retro newspaper print')">新聞印刷風</div>
+    </div>
+
+    <!-- 構図系 -->
+    <div id="camera" class="tag-content">
+        <div class="tag" onclick="toggleTag(this, 'White background')">白背景</div>
+        <div class="tag" onclick="toggleTag(this, 'Isometric view')">斜め俯瞰</div>
+        <div class="tag" onclick="toggleTag(this, 'Close-up shot')">アップ</div>
+        <div class="tag" onclick="toggleTag(this, 'Fish-eye lens')">魚眼レンズ</div>
+    </div>
+
+    <div class="btn-grid">
+        <button class="gen-btn" onclick="generate()">GENERATE</button>
+        <button class="sub-btn" onclick="generate()">RETRY</button>
+        <button class="sub-btn" onclick="resetAll()">RESET</button>
+        <button class="copy-btn" onclick="copyFinalPrompt()">FINAL PROMPT COPY</button>
     </div>
 
     <div id="result-area">
         <img id="output-img" src="" alt="Generated">
-        <div id="seed-display" style="font-family: monospace; font-size: 12px; color: #888;"></div>
+        <div id="seed-display"></div>
     </div>
 </div>
 
 <script>
     let activeTags = [];
 
+    // 起動時のURL処理
     window.onload = () => {
-        const params = new URLSearchParams(window.location.search);
-        const p = params.get('p');
+        const p = new URLSearchParams(window.location.search).get('p');
         if (p) document.getElementById('mainPrompt').value = decodeURIComponent(p);
     };
+
+    function showTab(tabId) {
+        document.querySelectorAll('.tag-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
 
     function toggleTag(el, tagValue) {
         el.classList.toggle('active');
@@ -118,30 +156,27 @@
     }
 
     function resetAll() {
-        if(confirm('リセットしますか？')) {
-            location.href = location.pathname; // URLパラメータも消してリロード
-        }
+        if(confirm('Reset all settings?')) location.href = location.pathname;
     }
 
     function generate() {
-        const basePrompt = document.getElementById('mainPrompt').value;
-        if (!basePrompt) return alert('プロンプトが空です');
+        const base = document.getElementById('mainPrompt').value;
+        if (!base) return alert('Prompt is empty');
 
         let seed = document.getElementById('seedInput').value;
         if (!seed) {
             seed = Math.floor(Math.random() * 1000000000);
-            document.getElementById('seedInput').value = seed; // 生成したシードを表示
+            document.getElementById('seedInput').value = seed;
         }
 
-        let finalPrompt = basePrompt;
-        if (activeTags.length > 0) finalPrompt += ", " + activeTags.join(", ");
-
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?seed=${seed}&nologo=true`;
-        const img = document.getElementById('output-img');
+        let final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true`;
+        
         const area = document.getElementById('result-area');
+        const img = document.getElementById('output-img');
         
         area.style.display = 'block';
-        img.style.opacity = '0.5';
+        img.style.opacity = '0.4';
         img.src = url;
         document.getElementById('seed-display').innerText = `SEED: ${seed}`;
         img.onload = () => img.style.opacity = '1';
@@ -150,7 +185,7 @@
     function copyFinalPrompt() {
         const base = document.getElementById('mainPrompt').value;
         let final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        navigator.clipboard.writeText(final).then(() => alert('コピー完了！'));
+        navigator.clipboard.writeText(final).then(() => alert('Copied!'));
     }
 </script>
 
