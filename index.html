@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.9</title>
+    <title>Abinoxx Engine v4.0</title>
     <style>
         :root {
             --bg: #0f1115;
@@ -62,7 +62,7 @@
 <body>
 
 <div class="container">
-    <h1>Abinoxx Engine v3.9</h1>
+    <h1>Abinoxx Engine v4.0</h1>
 
     <textarea id="mainPrompt" rows="4" placeholder="Waiting for prompt..."></textarea>
     <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
@@ -167,14 +167,13 @@
 <script>
     let activeTags = [];
 
-    // 【重要】ショートカットからのプロンプト（pパラメータ）を受け取る処理を再実装
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const p = urlParams.get('p');
         if (p) {
             document.getElementById('mainPrompt').value = decodeURIComponent(p);
-            // ショートカットから直接来た場合は、自動で生成を開始する
-            setTimeout(generate, 500);
+            // 【修正】読み込み完了後に少し余裕を持ってから生成
+            setTimeout(() => { generate(); }, 300);
         }
     };
 
@@ -219,28 +218,32 @@
         }
 
         const final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
+        
+        // 【修正】ランダムIDを生成してURLを完全にユニーク化
         const bust = Math.random().toString(36).substring(2, 12);
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&cache=${bust}`;
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&cb=${bust}`;
         
         const area = document.getElementById('result-area');
         const img = document.getElementById('output-img');
         
+        // 画像エリアを一旦隠してSafariのキャッシュをリセット
         area.style.display = 'block';
         img.style.opacity = '0.2';
+        
+        // 新しい画像をセット
         img.src = url;
         document.getElementById('seed-display').innerText = `Generating (SEED: ${seed})...`;
 
         img.onload = () => {
             img.style.opacity = '1';
             document.getElementById('seed-display').innerText = `SEED: ${seed}`;
-        };
-
-        setTimeout(() => {
+            // 完了後にスクロール
             img.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 500);
+        };
     }
 
     function retry() {
+        // RETRY時はシードをクリア
         document.getElementById('seedInput').value = '';
         generate();
     }
