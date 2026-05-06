@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.7 Sync</title>
+    <title>Abinoxx Engine v3.7 Full Auto</title>
     <style>
         :root {
             --bg: #0f1115;
@@ -33,9 +33,9 @@
             box-sizing: border-box; outline: none;
         }
 
-        /* 同期ボタン用のエリア */
-        .sync-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .sync-btn { background: #2d3440; border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 10px; font-size: 11px; cursor: pointer; }
+        /* ヘッダーエリア */
+        .header-area { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; position: relative; }
+        .status-badge { position: absolute; right: 0; font-size: 9px; color: #666; border: 1px solid #333; padding: 2px 6px; border-radius: 5px; }
 
         .tab-nav { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         .tab-nav::-webkit-scrollbar { display: none; }
@@ -64,20 +64,18 @@
 <body>
 
 <div class="container">
-    <div class="sync-area">
+    <div class="header-area">
         <h1>Abinoxx Engine v3.7 改</h1>
-        <button class="sync-btn" onclick="syncFromClipboard()">SYNC TAGS</button>
+        <div id="syncStatus" class="status-badge">READY</div>
     </div>
 
     <textarea id="mainPrompt" rows="4" placeholder="Waiting for prompt..."></textarea>
     <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
 
-    <!-- ナビゲーション（動的生成用） -->
     <div id="tabNav" class="tab-nav"></div>
 
-    <!-- タグ表示エリア（動的生成用） -->
     <div id="tagContainer">
-        <p style="font-size: 12px; color: #666; text-align: center;">SYNC TAGS ボタンを押してタグを読み込んでください</p>
+        <p style="font-size: 12px; color: #666; text-align: center;">Loading Tags...</p>
     </div>
 
     <div class="btn-grid">
@@ -89,37 +87,47 @@
 
     <div id="result-area">
         <img id="output-img" src="" alt="Generated">
-        <div id="seed-display" style="font-family: monospace; font-size: 11px; color: #666;"></div>
+        <div id="seed-display" style="font-family: monospace; font-size: 11px; color: #666; margin-top: 8px;"></div>
     </div>
 </div>
 
 <script>
-    let activeTags = [];
     let allTagsData = {};
 
     window.onload = () => {
-        // ショートカットからのURLパラメータ (p) を受け取り
-        const p = new URLSearchParams(window.location.search).get('p');
-        if (p) document.getElementById('mainPrompt').value = decodeURIComponent(p);
+        const urlParams = new URLSearchParams(window.location.search);
         
-        // 以前読み込んだタグがあれば復元（任意）
-        const saved = localStorage.getItem('abinoxx_tags');
-        if (saved) renderTags(JSON.parse(saved));
-    };
-
-    // クリップボードからタグを同期する核となる関数
-    async function syncFromClipboard() {
-        try {
-            const text = await navigator.clipboard.readText();
-            const data = JSON.parse(text);
-            allTagsData = data;
-            localStorage.setItem('abinoxx_tags', JSON.stringify(data));
-            renderTags(data);
-            alert("同期完了！ポコポコ増えました。");
-        } catch (e) {
-            alert("クリップボードに正しいタグデータがありません。AddTagで保存した後に押してください。");
+        // 1. プロンプト(p)の受け取り
+        const p = urlParams.get('p');
+        if (p) {
+            document.getElementById('mainPrompt').value = decodeURIComponent(p);
         }
-    }
+        
+        // 2. タグデータ(t)の受け取りと保存
+        const t = urlParams.get('t');
+        if (t) {
+            try {
+                const data = JSON.parse(decodeURIComponent(t));
+                allTagsData = data;
+                localStorage.setItem('abinoxx_tags', JSON.stringify(data));
+                document.getElementById('syncStatus').innerText = "SYNCED";
+                document.getElementById('syncStatus').style.color = "#4cd964";
+            } catch(e) {
+                console.error("Tag Parse Error");
+            }
+        }
+
+        // 3. 表示するタグの決定（URL優先、なければ保存分）
+        const displayData = Object.keys(allTagsData).length > 0 
+                            ? allTagsData 
+                            : JSON.parse(localStorage.getItem('abinoxx_tags') || '{}');
+
+        if (Object.keys(displayData).length > 0) {
+            renderTags(displayData);
+        } else {
+            document.getElementById('tagContainer').innerHTML = '<p style="font-size: 11px; color: #555; text-align: center;">タグデータが見つかりません。<br>ショートカットから起動してください。</p>';
+        }
+    };
 
     function renderTags(data) {
         const nav = document.getElementById('tabNav');
@@ -128,20 +136,21 @@
         container.innerHTML = '';
 
         Object.keys(data).forEach((cat, index) => {
-            // タブ生成
             const tab = document.createElement('div');
             tab.className = `tab-item ${index === 0 ? 'active' : ''}`;
             tab.innerText = cat;
             tab.onclick = (e) => showTab(cat, e.target);
             nav.appendChild(tab);
 
-            // コンテンツ生成
             const content = document.createElement('div');
             content.id = `cat-${cat}`;
             content.className = `tag-content ${index === 0 ? 'active' : ''}`;
             
             data[cat].forEach(tagStr => {
-                const [name, val] = tagStr.split(',').map(s => s.trim());
+                const parts = tagStr.split(',').map(s => s.trim());
+                const name = parts[0];
+                const val = parts.slice(1).join(', '); // プロンプト内のコンマを許容
+                
                 const tagEl = document.createElement('div');
                 tagEl.className = 'tag';
                 tagEl.innerText = name;
@@ -163,9 +172,8 @@
         const promptArea = document.getElementById('mainPrompt');
         const currentVal = promptArea.value.trim();
         promptArea.value = currentVal === "" ? text : currentVal + ", " + text;
-        
         el.classList.add('active');
-        setTimeout(() => el.classList.remove('active'), 500);
+        setTimeout(() => el.classList.remove('active'), 300);
     }
 
     function generate() {
@@ -174,14 +182,22 @@
         let seed = document.getElementById('seedInput').value || Math.floor(Math.random() * 1000000000);
         document.getElementById('seedInput').value = seed;
 
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true`;
         const area = document.getElementById('result-area');
         const img = document.getElementById('output-img');
+        const seedDisp = document.getElementById('seed-display');
         
         area.style.display = 'block';
+        img.style.opacity = '0.5';
+        seedDisp.innerText = "Generating...";
+        
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true`;
+        
         img.src = url;
-        document.getElementById('seed-display').innerText = `SEED: ${seed}`;
-        img.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        img.onload = () => {
+            img.style.opacity = '1';
+            seedDisp.innerText = `SEED: ${seed}`;
+            img.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
     }
 
     function resetAll() { if(confirm('リセットしますか？')) location.reload(); }
