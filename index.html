@@ -3,51 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.7 Final</title>
+    <title>Abinoxx Engine v3.8</title>
     <style>
         :root {
             --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef;
-            --input: #262c36; --tag-bg: #2d3440; --tag-active: #ff3b30;
+            --input: #262c36; --tag-bg: #2d3440;
         }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 480px; background: var(--card); padding: 20px; border-radius: 28px; box-sizing: border-box; }
         h1 { font-size: 0.9rem; text-align: center; color: var(--accent); letter-spacing: 3px; margin-bottom: 20px; }
-        
         .sync-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .paste-btn { background: #2d3440; border: 1px solid var(--accent); color: var(--accent); padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; }
-
         textarea, input { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 14px; border-radius: 16px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; outline: none; }
-        
-        .tab-nav { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .tab-nav { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
         .tab-item { font-size: 12px; padding: 8px 14px; background: #333; border-radius: 12px; white-space: nowrap; color: #aaa; flex-shrink: 0; }
         .tab-item.active { background: var(--accent); color: #fff; }
-        
         .tag-content { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 120px; }
         .tag-content.active { display: flex; }
         .tag { background: var(--tag-bg); border: 1px solid #444; color: #ddd; padding: 8px 12px; border-radius: 12px; font-size: 11px; }
-        
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button { border: none; border-radius: 16px; font-weight: bold; cursor: pointer; padding: 14px; }
         .gen-btn { grid-column: span 2; background: linear-gradient(135deg, #ff3b30, #b31d14); color: white; font-size: 1.2rem; }
         .sub-btn { background: #3a414d; color: white; }
-        
-        #result-area { margin-top: 25px; text-align: center; width: 100%; min-height: 300px; }
+        #result-area { margin-top: 25px; text-align: center; width: 100%; }
         .generated-img { width: 100%; border-radius: 20px; border: 2px solid #2d3440; margin-bottom: 12px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="sync-row">
-        <h1>Abinoxx Engine v3.7</h1>
-        <button id="pBtn" class="paste-btn" onclick="readFromClipboard()">PASTE PROMPT</button>
+        <h1>Abinoxx Engine v3.8</h1>
+        <button class="paste-btn" onclick="readFromClipboard()">PASTE PROMPT</button>
     </div>
-    
-    <textarea id="mainPrompt" rows="4" placeholder="1. ショートカット実行&#13;2. PASTE PROMPTボタンを押す"></textarea>
-    <input type="number" id="seedInput" placeholder="SEED (Automatic)">
-    
+    <textarea id="mainPrompt" rows="4" placeholder="Paste your prompt here..."></textarea>
+    <input type="number" id="seedInput" placeholder="SEED (Random if empty)">
     <div id="tabNav" class="tab-nav"></div>
     <div id="tagContainer"></div>
-    
     <div class="btn-grid">
         <button class="gen-btn" onclick="generate()">GENERATE</button>
         <button class="sub-btn" onclick="retry()">RETRY</button>
@@ -57,40 +48,45 @@
 </div>
 
 <script>
-    let allTagsData = {};
-
-    // クリップボード読み取り（ボタンクリック時のみ発動）
-    async function readFromClipboard() {
-        try {
-            const text = await navigator.clipboard.readText();
-            if (text) {
-                document.getElementById('mainPrompt').value = text;
-            }
-        } catch (err) {
-            // セキュリティで弾かれた場合は、手動ペースト用の窓を出す
-            const manualText = prompt("クリップボードへのアクセスが許可されませんでした。ここにペーストしてください：");
-            if (manualText) {
-                document.getElementById('mainPrompt').value = manualText;
-            }
-        }
-    }
+    let currentTags = {};
 
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const t = urlParams.get('t');
+
         if (t) {
+            // --- パターンA: URLにタグがある場合 (上書き更新) ---
             try {
-                allTagsData = JSON.parse(decodeURIComponent(t));
-                localStorage.setItem('abinoxx_tags', JSON.stringify(allTagsData));
-            } catch(e) { console.error("Tag Sync Error"); }
+                currentTags = JSON.parse(decodeURIComponent(t));
+                localStorage.setItem('abinoxx_tags_v3', JSON.stringify(currentTags));
+                console.log("Storage Updated!");
+                // 更新完了を視覚的に出すなら
+                document.querySelector('h1').innerText = "V3.8 SYNCED!";
+                setTimeout(() => { document.querySelector('h1').innerText = "Abinoxx Engine v3.8"; }, 2000);
+            } catch(e) { console.error("Sync Error"); }
+        } else {
+            // --- パターンB: URLにタグがない場合 (保存済みを使用) ---
+            const saved = localStorage.getItem('abinoxx_tags_v3');
+            if (saved) currentTags = JSON.parse(saved);
         }
-        const displayData = Object.keys(allTagsData).length > 0 ? allTagsData : JSON.parse(localStorage.getItem('abinoxx_tags') || '{}');
-        if (Object.keys(displayData).length > 0) renderTags(displayData);
+
+        if (Object.keys(currentTags).length > 0) renderTags(currentTags);
     };
+
+    async function readFromClipboard() {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) document.getElementById('mainPrompt').value = text;
+        } catch (err) {
+            const manualText = prompt("Paste here:");
+            if (manualText) document.getElementById('mainPrompt').value = manualText;
+        }
+    }
 
     function renderTags(data) {
         const nav = document.getElementById('tabNav');
         const container = document.getElementById('tagContainer');
+        nav.innerHTML = ''; container.innerHTML = '';
         Object.keys(data).forEach((cat, index) => {
             const tab = document.createElement('div');
             tab.className = `tab-item ${index === 0 ? 'active' : ''}`;
@@ -111,8 +107,8 @@
                 tagEl.innerText = parts[0];
                 tagEl.onclick = () => {
                     const area = document.getElementById('mainPrompt');
-                    const promptVal = parts.slice(1).join(', ');
-                    area.value = area.value.trim() === "" ? promptVal : area.value.trim() + ", " + promptVal;
+                    const val = parts.slice(1).join(', ');
+                    area.value = area.value.trim() === "" ? val : area.value.trim() + ", " + val;
                 };
                 content.appendChild(tagEl);
             });
@@ -125,22 +121,15 @@
         if (!base) return;
         let seed = document.getElementById('seedInput').value || Math.floor(Math.random() * 1000000000);
         document.getElementById('seedInput').value = seed;
-
         const resultArea = document.getElementById('result-area');
         resultArea.innerHTML = `<p style="font-size:12px;color:#666;">Generating...</p>`;
-        
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
-        const bust = Date.now();
-        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true&cb=${bust}`;
-        
+        // パラメータを極限まで絞り、キャッシュ対策のcbだけ残す
+        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true&cb=${Date.now()}`;
         newImg.onload = () => {
             resultArea.innerHTML = '';
             resultArea.appendChild(newImg);
-            const info = document.createElement('div');
-            info.style = "font-size:10px;color:#666;";
-            info.innerText = `SEED: ${seed}`;
-            resultArea.appendChild(info);
             newImg.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
     }
