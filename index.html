@@ -166,7 +166,7 @@
     }
 
     // --- ここから生成・再生成の重要ロジック ---
-    function generate() {
+        function generate() {
         const base = document.getElementById('mainPrompt').value;
         if (!base) return alert('Input prompt!');
 
@@ -180,24 +180,35 @@
         const img = document.getElementById('output-img');
         const seedDisp = document.getElementById('seed-display');
         
+        // --- 修正ポイント：一度リセットして「動いている感」を出す ---
         area.style.display = 'block';
-        img.style.opacity = '0.4';
-        seedDisp.innerText = "Generating new image...";
+        img.src = ""; // 一旦画像を空にする
+        img.style.opacity = '0'; // 消す
+        seedDisp.innerText = "Generating new image (SEED: " + seed + ")...";
         
-        // キャッシュバスター(v)を付けて、同じSEEDでも強制的に再読み込みさせる
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true&v=${Date.now()}`;
+        // 完全にユニークなURLを作る（末尾にミリ秒単位の時間を足す）
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true&t=${new Date().getTime()}`;
         
+        // 新しい画像をセット
         img.src = url;
+
         img.onload = () => {
             img.style.opacity = '1';
             seedDisp.innerText = `SEED: ${seed}`;
             img.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
+
+        img.onerror = () => {
+            seedDisp.innerText = "Error! 再生成に失敗しました。";
+            img.style.opacity = '1';
+        };
     }
 
     function retry() {
-        document.getElementById('seedInput').value = ''; // SEEDを消す
-        generate(); // 新しいSEEDで生成
+        // SEEDを確実に消去
+        document.getElementById('seedInput').value = "";
+        // その後、生成処理へ
+        generate();
     }
 
     function resetAll() { if(confirm('Reset?')) location.reload(); }
