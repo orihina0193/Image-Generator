@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.8</title>
+    <title>Abinoxx Engine v3.8 Final</title>
     <style>
         :root {
             --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef;
@@ -35,8 +35,8 @@
         <h1>Abinoxx Engine v3.8</h1>
         <button class="paste-btn" onclick="readFromClipboard()">PASTE PROMPT</button>
     </div>
-    <textarea id="mainPrompt" rows="4" placeholder="Paste your prompt here..."></textarea>
-    <input type="number" id="seedInput" placeholder="SEED (Random if empty)">
+    <textarea id="mainPrompt" rows="4" placeholder="1. ショートカットからここへ移動&#13;2. PASTE PROMPTを押す"></textarea>
+    <input type="number" id="seedInput" placeholder="SEED (Automatic)">
     <div id="tabNav" class="tab-nav"></div>
     <div id="tagContainer"></div>
     <div class="btn-grid">
@@ -49,27 +49,22 @@
 
 <script>
     let currentTags = {};
+    const STORAGE_KEY = 'abinoxx_tags_v3';
 
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const t = urlParams.get('t');
-
         if (t) {
-            // --- パターンA: URLにタグがある場合 (上書き更新) ---
             try {
                 currentTags = JSON.parse(decodeURIComponent(t));
-                localStorage.setItem('abinoxx_tags_v3', JSON.stringify(currentTags));
-                console.log("Storage Updated!");
-                // 更新完了を視覚的に出すなら
-                document.querySelector('h1').innerText = "V3.8 SYNCED!";
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(currentTags));
+                document.querySelector('h1').innerText = "✅ SYNC COMPLETE!";
                 setTimeout(() => { document.querySelector('h1').innerText = "Abinoxx Engine v3.8"; }, 2000);
             } catch(e) { console.error("Sync Error"); }
         } else {
-            // --- パターンB: URLにタグがない場合 (保存済みを使用) ---
-            const saved = localStorage.getItem('abinoxx_tags_v3');
+            const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) currentTags = JSON.parse(saved);
         }
-
         if (Object.keys(currentTags).length > 0) renderTags(currentTags);
     };
 
@@ -78,7 +73,7 @@
             const text = await navigator.clipboard.readText();
             if (text) document.getElementById('mainPrompt').value = text;
         } catch (err) {
-            const manualText = prompt("Paste here:");
+            const manualText = prompt("ペーストしてください:");
             if (manualText) document.getElementById('mainPrompt').value = manualText;
         }
     }
@@ -125,7 +120,6 @@
         resultArea.innerHTML = `<p style="font-size:12px;color:#666;">Generating...</p>`;
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
-        // パラメータを極限まで絞り、キャッシュ対策のcbだけ残す
         newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true&cb=${Date.now()}`;
         newImg.onload = () => {
             resultArea.innerHTML = '';
