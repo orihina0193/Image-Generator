@@ -3,208 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.7 (Fixed)</title>
+    <title>ABINOXX ENGINE v4.0</title>
     <style>
-        :root {
-            --bg: #0f1115;
-            --card: #1b1e24;
-            --accent: #ff3b30; /* Chili Red */
-            --text: #efefef;
-            --input: #262c36;
-            --tag-bg: #2d3440;
-            --tag-active: #ff3b30;
-            --fav-accent: #ffcc00;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 15px;
-            display: flex; flex-direction: column; align-items: center;
-        }
-
-        .container { width: 100%; max-width: 480px; background: var(--card); padding: 20px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); box-sizing: border-box; }
-        h1 { font-size: 0.9rem; text-align: center; letter-spacing: 3px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; }
-
-        textarea, input {
-            width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff;
-            padding: 14px; border-radius: 16px; font-size: 16px; margin-bottom: 12px;
-            box-sizing: border-box; outline: none;
-        }
-
-        .tab-nav { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        .tab-nav::-webkit-scrollbar { display: none; }
-        .tab-item { font-size: 12px; padding: 8px 14px; background: #333; border-radius: 12px; white-space: nowrap; cursor: pointer; color: #aaa; flex-shrink: 0; }
-        .tab-item.active { background: var(--accent); color: #fff; }
-
-        .tag-content { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 120px; }
-        .tag-content.active { display: flex; }
-        
-        .tag {
-            background: var(--tag-bg); border: 1px solid #444; color: #ddd;
-            padding: 8px 12px; border-radius: 12px; font-size: 11px; cursor: pointer; transition: 0.2s;
-        }
-        .tag.active { background: var(--tag-active); border-color: var(--tag-active); color: white; transform: scale(1.05); }
-
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { border: none; border-radius: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .gen-btn { grid-column: span 2; background: linear-gradient(135deg, #ff3b30, #b31d14); color: white; padding: 18px; font-size: 1.2rem; margin-bottom: 5px; }
-        .sub-btn { background: #3a414d; color: white; padding: 14px; font-size: 0.9rem; }
-        .copy-btn { grid-column: span 2; background: transparent; border: 1px solid #444; color: #888; margin-top: 5px; padding: 10px; font-size: 0.8rem; }
-
-        #result-area { margin-top: 25px; text-align: center; display: none; width: 100%; }
-        .img-container { width: 100%; border-radius: 20px; border: 2px solid #2d3440; margin-bottom: 12px; min-height: 200px; background: #222; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .img-container img { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.4s; }
-        #seed-display { font-family: monospace; font-size: 11px; color: #666; }
+        :root { --primary: #ff3b30; --bg: #1c1c1e; --card: #2c2c2e; --text: #ffffff; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h2 { color: var(--primary); font-size: 1.2rem; margin-bottom: 10px; border-bottom: 1px solid var(--card); padding-bottom: 5px; }
+        textarea { width: 100%; height: 100px; background: var(--card); color: var(--text); border: 1px solid #444; border-radius: 10px; padding: 10px; box-sizing: border-box; font-size: 16px; margin-bottom: 15px; }
+        .tab-container { display: flex; overflow-x: auto; gap: 10px; margin-bottom: 15px; padding-bottom: 5px; }
+        .tab { background: var(--card); padding: 8px 15px; border-radius: 20px; white-space: nowrap; font-size: 14px; cursor: pointer; }
+        .tab.active { background: var(--primary); font-weight: bold; }
+        .tag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; min-height: 150px; margin-bottom: 20px; }
+        .tag-btn { background: var(--card); border: 1px solid #444; color: var(--text); padding: 10px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .tag-btn:active { background: #3a3a3c; transform: scale(0.95); }
+        .generate-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 50px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Abinoxx Engine v3.7 (Fixed)</h1>
+    <h2>ABINOXX ENGINE</h2>
+    
+    <!-- 入力エリア -->
+    <textarea id="mainPrompt" placeholder="ここにプロンプトを入力、またはタグを選択..."></textarea>
 
-    <textarea id="mainPrompt" rows="4" placeholder="Waiting for prompt..."></textarea>
-    <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
+    <!-- カテゴリータブ（自動生成） -->
+    <div id="tabList" class="tab-container"></div>
 
-    <div class="tab-nav">
-        <div class="tab-item active" onclick="showTab('favorites')">⭐ Favorites</div>
-        <div class="tab-item" onclick="showTab('art')">Art/History</div>
-        <div class="tab-item" onclick="showTab('illustration')">Illustration</div>
-        <div class="tab-item" onclick="showTab('material')">Material/FX</div>
-        <div class="tab-item" onclick="showTab('camera')">Layout/Retro</div>
-    </div>
+    <!-- タグボタン（自動生成） -->
+    <div id="tagGrid" class="tag-grid"></div>
 
-    <!-- 全スタイルタグの完全復活 -->
-    <div id="favorites" class="tag-content active">
-        <div class="tag" onclick="appendMainPrompt('Game-style cartoon character, flat colors, bold lines, serious but meta-humorous atmosphere')">メタユーモア</div>
-        <div class="tag" onclick="appendMainPrompt('Hand-drawn illustration, detailed texture, calm tones, distinctive character personality')">こだわり手描き</div>
-        <div class="tag" onclick="appendMainPrompt('Realistic-leaning deformation, mature style, emphasized facial features, compact body balance')">リアル寄りデフォルメ</div>
-        <div class="tag" onclick="appendMainPrompt('Simple bold lines, sharp outlines, rounded deformation, simple circular/oval shapes, humorous large eyes')">シンプル＆愛嬌</div>
-        <div class="tag" onclick="appendMainPrompt('Tim Burton style, eerie but charming, long limbs, dark gothic colors, gothic atmosphere')">バートン風</div>
-    </div>
-
-    <div id="art" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, 'Japanese woodblock print style, flat perspective, traditional palette, minimal shading, bold outlines')">日本画(4)</div>
-        <div class="tag" onclick="toggleTag(this, 'classical oil painting style, chiaroscuro lighting, rich textures, realistic anatomy, canvas grain')">油絵(8)</div>
-        <div class="tag" onclick="toggleTag(this, 'Ukiyo-e style, woodcut texture, vibrant mineral pigments, dynamic composition, Edo period aesthetic')">浮世絵</div>
-        <div class="tag" onclick="toggleTag(this, 'Ink wash painting, Sumi-e style, bold brush strokes, Zen aesthetic, masterful use of negative space')">水墨画</div>
-        <div class="tag" onclick="toggleTag(this, 'Cyberpunk aesthetic, neon lighting, rainy streets, high-tech low-life, cinematic atmosphere')">サイバーパンク</div>
-    </div>
-
-    <div id="illustration" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, '90s retro anime style, cel shaded, soft grain, muted vintage colors, nostalgic vibe')">90年代アニメ</div>
-        <div class="tag" onclick="toggleTag(this, 'Studio Ghibli style, lush hand-painted backgrounds, whimsical atmosphere, soft lighting')">ジブリ風</div>
-        <div class="tag" onclick="toggleTag(this, 'American comic book style, heavy ink lines, dot halftone patterns, dramatic shadows')">アメコミ風</div>
-        <div class="tag" onclick="toggleTag(this, 'Vibrant pop art style, bold colors, screen print texture, high contrast')">ポップアート</div>
-        <div class="tag" onclick="toggleTag(this, 'Dark fantasy illustration, eerie atmosphere, intricate details, gothic aesthetic')">ダークファンタジー</div>
-    </div>
-
-    <div id="material" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, 'Claymation style, handcrafted clay texture, stop-motion aesthetic, fingerprints visible')">クレイアニメ</div>
-        <div class="tag" onclick="toggleTag(this, 'Knitted wool texture, amigurumi style, soft fabric details, cozy atmosphere')">編みぐるみ</div>
-        <div class="tag" onclick="toggleTag(this, 'Stained glass mosaic, vibrant translucent colors, lead outlines, glowing light effect')">ステンドグラス</div>
-        <div class="tag" onclick="toggleTag(this, 'Isometric voxel art, 3D pixel aesthetic, vibrant colors, clean lighting')">ボクセルアート</div>
-        <div class="tag" onclick="toggleTag(this, 'Glitch art aesthetic, digital distortion, chromatic aberration, scanlines')">グリッチ</div>
-    </div>
-
-    <div id="camera" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, 'Shot on 35mm film, vintage grain, warm tones, nostalgic cinematic look')">35mmフィルム</div>
-        <div class="tag" onclick="toggleTag(this, 'Low-angle heroic shot, dramatic perspective, wide angle lens, powerful composition')">ローアングル</div>
-        <div class="tag" onclick="toggleTag(this, 'Fish-eye lens distortion, ultra-wide perspective, quirky 90s music video vibe')">魚眼レンズ</div>
-        <div class="tag" onclick="toggleTag(this, 'Polaroid instant photo, soft focus, faded colors, white border aesthetic')">ポラロイド</div>
-        <div class="tag" onclick="toggleTag(this, 'Security camera footage, grainy black and white, timestamp, eerie surveillance vibe')">監視カメラ</div>
-    </div>
-
-    <div class="btn-grid">
-        <button class="gen-btn" onclick="generate()">GENERATE</button>
-        <button class="sub-btn" onclick="retry()">RETRY</button>
-        <button class="sub-btn" onclick="resetAll()">RESET</button>
-        <button class="copy-btn" onclick="copyFinalPrompt()">FINAL PROMPT COPY</button>
-    </div>
-
-    <div id="result-area">
-        <div id="img-box" class="img-container"></div>
-        <div id="seed-display"></div>
-    </div>
+    <button class="generate-btn" onclick="copyAndOpen()">GENERATE & OPEN</button>
 </div>
 
 <script>
-    let activeTags = [];
+    // 1. データ受け取り用の初期変数
+    const allTags = window.externalTags || { "⭐ Favorites": [] };
+    let currentTab = Object.keys(allTags)[0];
 
+    // 2. 画面の初期化
     window.onload = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const p = urlParams.get('p');
-        if (p) {
-            document.getElementById('mainPrompt').value = decodeURIComponent(p);
-            setTimeout(() => { generate(); }, 500);
+        if (window.initialPrompt) {
+            document.getElementById('mainPrompt').value = window.initialPrompt;
         }
+        renderTabs();
+        renderTags(currentTab);
     };
 
-    function showTab(tabId) {
-        document.querySelectorAll('.tag-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
-        const target = document.getElementById(tabId);
-        if(target) target.classList.add('active');
-        event.currentTarget.classList.add('active');
+    // 3. カテゴリータブの描画
+    function renderTabs() {
+        const tabList = document.getElementById('tabList');
+        tabList.innerHTML = '';
+        Object.keys(allTags).forEach(cat => {
+            const div = document.createElement('div');
+            div.className = `tab ${cat === currentTab ? 'active' : ''}`;
+            div.innerText = cat;
+            div.onclick = () => {
+                currentTab = cat;
+                renderTabs();
+                renderTags(cat);
+            };
+            tabList.appendChild(div);
+        });
     }
 
-    function toggleTag(el, tagValue) {
-        el.classList.toggle('active');
-        if (el.classList.contains('active')) activeTags.push(tagValue);
-        else activeTags = activeTags.filter(t => t !== tagValue);
-    }
-
-    function appendMainPrompt(text) {
-        const pArea = document.getElementById('mainPrompt');
-        pArea.value = pArea.value.trim() === "" ? text : pArea.value + ", " + text;
-    }
-
-    function resetAll() { if(confirm('Reset?')) location.href = location.pathname; }
-
-    function generate() {
-        const base = document.getElementById('mainPrompt').value;
-        if (!base) return;
+    // 4. タグボタンの描画
+    function renderTags(category) {
+        const grid = document.getElementById('tagGrid');
+        grid.innerHTML = '';
+        const tags = allTags[category] || [];
         
-        let seed = document.getElementById('seedInput').value;
-        if (!seed) {
-            seed = Math.floor(Math.random() * 1000000000);
-            document.getElementById('seedInput').value = seed;
+        tags.forEach(tagStr => {
+            // "表示名, プロンプト" の形式を分解
+            const [name, prompt] = tagStr.split(',').map(s => s.trim());
+            const btn = document.createElement('button');
+            btn.className = 'tag-btn';
+            btn.innerText = name;
+            btn.onclick = () => addTag(prompt);
+            grid.appendChild(btn);
+        });
+    }
+
+    // 5. プロンプト追加
+    function addTag(prompt) {
+        const area = document.getElementById('mainPrompt');
+        if (area.value && !area.value.endsWith(', ')) {
+            area.value += ', ';
         }
-
-        const final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&t=${Date.now()}`;
-        
-        const area = document.getElementById('result-area');
-        const imgBox = document.getElementById('img-box');
-        
-        area.style.display = 'block';
-        document.getElementById('seed-display').innerText = `SEED: ${seed}`;
-
-        // v3.7ベースの画像更新処理
-        imgBox.innerHTML = ''; 
-        const newImg = document.createElement('img');
-        
-        newImg.onload = () => {
-            newImg.style.opacity = '1';
-            newImg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        };
-        
-        // alert（メッセージ）を削除
-        newImg.src = url;
-        imgBox.appendChild(newImg);
+        area.value += prompt;
     }
 
-    function retry() {
-        document.getElementById('seedInput').value = '';
-        generate();
-    }
-
-    function copyFinalPrompt() {
-        const base = document.getElementById('mainPrompt').value;
-        const final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        navigator.clipboard.writeText(final).then(() => alert('Copied!'));
+    // 6. コピーして画像生成サイト（仮）へ
+    function copyAndOpen() {
+        const area = document.getElementById('mainPrompt');
+        navigator.clipboard.writeText(area.value).then(() => {
+            alert('コピーしました！画像生成サイトを開きます。');
+            // ここにImageFXや生成AIのURLを入れる
+            window.location.href = "https://www.google.com/search?q=ImageFX";
+        });
     }
 </script>
+
 </body>
 </html>
