@@ -175,12 +175,17 @@
         el.classList.add('active');
         setTimeout(() => el.classList.remove('active'), 300);
     }
-
     function generate() {
+        // 入力欄から最新のテキストを取得
         const base = document.getElementById('mainPrompt').value;
         if (!base) return alert('プロンプトを入力してください');
-        let seed = document.getElementById('seedInput').value || Math.floor(Math.random() * 1000000000);
-        document.getElementById('seedInput').value = seed;
+        
+        // SEEDの処理（空ならランダム、あればそれを使う）
+        let seed = document.getElementById('seedInput').value;
+        if (!seed) {
+            seed = Math.floor(Math.random() * 1000000000);
+            document.getElementById('seedInput').value = seed;
+        }
 
         const area = document.getElementById('result-area');
         const img = document.getElementById('output-img');
@@ -190,7 +195,9 @@
         img.style.opacity = '0.5';
         seedDisp.innerText = "Generating...";
         
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true`;
+        // キャッシュ回避用のパラメータを追加
+        const bust = Math.random().toString(36).substring(2, 15);
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true&cb=${bust}`;
         
         img.src = url;
         img.onload = () => {
@@ -198,6 +205,12 @@
             seedDisp.innerText = `SEED: ${seed}`;
             img.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
+    }
+
+    // RETRYボタン：SEEDを空にしてからgenerateを呼ぶ
+    function retry() {
+        document.getElementById('seedInput').value = '';
+        generate();
     }
 
     function resetAll() { if(confirm('リセットしますか？')) location.reload(); }
