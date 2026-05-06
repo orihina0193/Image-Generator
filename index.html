@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.7 (Fixed)</title>
+    <title>Abinoxx Engine v3.7</title>
     <style>
         :root {
             --bg: #0f1115;
@@ -46,6 +46,7 @@
             padding: 8px 12px; border-radius: 12px; font-size: 11px; cursor: pointer; transition: 0.2s;
         }
         .tag.active { background: var(--tag-active); border-color: var(--tag-active); color: white; transform: scale(1.05); }
+        .tag-special { border-color: var(--fav-accent); color: var(--fav-accent); }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button { border: none; border-radius: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
@@ -54,15 +55,14 @@
         .copy-btn { grid-column: span 2; background: transparent; border: 1px solid #444; color: #888; margin-top: 5px; padding: 10px; font-size: 0.8rem; }
 
         #result-area { margin-top: 25px; text-align: center; display: none; width: 100%; }
-        .img-container { width: 100%; border-radius: 20px; border: 2px solid #2d3440; margin-bottom: 12px; min-height: 200px; background: #222; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .img-container img { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.4s; }
+        #output-img { width: 100%; border-radius: 20px; border: 2px solid #2d3440; margin-bottom: 12px; min-height: 200px; background: #222; }
         #seed-display { font-family: monospace; font-size: 11px; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Abinoxx Engine v3.7 (Fixed)</h1>
+    <h1>Abinoxx Engine v3.7</h1>
 
     <textarea id="mainPrompt" rows="4" placeholder="Waiting for prompt..."></textarea>
     <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
@@ -75,45 +75,84 @@
         <div class="tab-item" onclick="showTab('camera')">Layout/Retro</div>
     </div>
 
-    <!-- 全スタイルタグの完全復活 -->
+    <!-- お気に入り -->
     <div id="favorites" class="tag-content active">
-        <div class="tag" onclick="appendMainPrompt('Game-style cartoon character, flat colors, bold lines, serious but meta-humorous atmosphere')">メタユーモア</div>
-        <div class="tag" onclick="appendMainPrompt('Hand-drawn illustration, detailed texture, calm tones, distinctive character personality')">こだわり手描き</div>
-        <div class="tag" onclick="appendMainPrompt('Realistic-leaning deformation, mature style, emphasized facial features, compact body balance')">リアル寄りデフォルメ</div>
-        <div class="tag" onclick="appendMainPrompt('Simple bold lines, sharp outlines, rounded deformation, simple circular/oval shapes, humorous large eyes')">シンプル＆愛嬌</div>
-        <div class="tag" onclick="appendMainPrompt('Tim Burton style, eerie but charming, long limbs, dark gothic colors, gothic atmosphere')">バートン風</div>
+        <div class="tag tag-special" onclick="appendMainPrompt('Game-style cartoon character, flat colors, bold lines, serious but meta-humorous atmosphere')">メタユーモア</div>
+        <div class="tag tag-special" onclick="appendMainPrompt('Hand-drawn illustration, detailed texture, calm tones, distinctive character personality')">こだわり手描き</div>
+        <div class="tag tag-special" onclick="appendMainPrompt('Realistic-leaning deformation, mature style, emphasized facial features, compact body balance')">リアル寄りデフォルメ</div>
+        <div class="tag tag-special" onclick="appendMainPrompt('Simple bold lines, sharp outlines, rounded deformation, simple circular/oval shapes, humorous large eyes')">シンプル＆愛嬌</div>
+        <div class="tag tag-special" onclick="appendMainPrompt('Tim Burton style, eerie but charming, long limbs, dark gothic colors, gothic atmosphere')">バートン風</div>
     </div>
 
+    <!-- アート・歴史（略さず保持） -->
     <div id="art" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'Japanese woodblock print style, flat perspective, traditional palette, minimal shading, bold outlines')">日本画(4)</div>
         <div class="tag" onclick="toggleTag(this, 'classical oil painting style, chiaroscuro lighting, rich textures, realistic anatomy, canvas grain')">油絵(8)</div>
-        <div class="tag" onclick="toggleTag(this, 'Ukiyo-e style, woodcut texture, vibrant mineral pigments, dynamic composition, Edo period aesthetic')">浮世絵</div>
-        <div class="tag" onclick="toggleTag(this, 'Ink wash painting, Sumi-e style, bold brush strokes, Zen aesthetic, masterful use of negative space')">水墨画</div>
-        <div class="tag" onclick="toggleTag(this, 'Cyberpunk aesthetic, neon lighting, rainy streets, high-tech low-life, cinematic atmosphere')">サイバーパンク</div>
+        <div class="tag" onclick="toggleTag(this, 'fantasy illustration style, semi-realistic, brush-paint texture, soft lighting, high detail')">厚塗り(2)</div>
+        <div class="tag" onclick="toggleTag(this, 'high-fantasy digital art style, hyper-detailed, glowing effects, surreal lighting, ornate design')">ハイファン(10)</div>
+        <div class="tag" onclick="toggleTag(this, 'watercolor painting style, pastel tones, soft blending, gentle brushstrokes, dreamlike texture')">水彩画(5)</div>
+        <div class="tag" onclick="toggleTag(this, 'art nouveau style, flowing lines, floral patterns, soft pastel colors, decorative framing')">アールヌーヴォー(19)</div>
+        <div class="tag" onclick="toggleTag(this, 'Mesoamerican mural style, flat symbolic figures, carved-stone texture, ancient iconography, earthy tones')">マヤアステカ(32)</div>
+        <div class="tag" onclick="toggleTag(this, 'Egyptian wall painting style, flat symbolic figures, ancient iconography, earthy tones, stone texture')">エジプト壁画</div>
+        <div class="tag" onclick="toggleTag(this, 'etching style, fine engraved lines, sepia tones, antique print texture, crosshatching detail')">銅版画(18)</div>
+        <div class="tag" onclick="toggleTag(this, 'pastel art style, soft textures, powdery strokes, warm hues, gentle gradients')">パステル(21)</div>
+        <div class="tag" onclick="toggleTag(this, 'mosaic art style, tile patterns, tessellated shapes, vibrant inlaid colors, ancient texture')">モザイク(23)</div>
+        <div class="tag" onclick="toggleTag(this, 'pop art style, bold flat colors, halftone dots, repetition, graphic comic layout')">ポップアート(25)</div>
+        <div class="tag" onclick="toggleTag(this, 'medieval miniature painting style, gold leaf effect, ornamental framing, flat perspective, fine linework')">中世細密画(30)</div>
+        <div class="tag" onclick="toggleTag(this, 'African textile art style, bold geometric patterns, earthy textures, primary colors, fabric motif simulation')">アフリカ布(31)</div>
+        <div class="tag" onclick="toggleTag(this, 'khokhloma folk art style, swirling red and gold floral motifs, black lacquer background, ornamental patterns')">ホフロマ(33)</div>
+        <div class="tag" onclick="toggleTag(this, 'cubist style, fractured forms, multiple perspectives, angular geometry, muted color blocks')">キュビスム(34)</div>
+        <div class="tag" onclick="toggleTag(this, 'post-impressionist style, bold brushstrokes, vivid but tempered palette, structured composition, painterly forms')">ポスト印象派(40)</div>
+        <div class="tag" onclick="toggleTag(this, 'Chinese ink wash painting style, monochrome, expressive brushwork, wet-on-wet textures, poetic composition')">水墨画(42)</div>
+        <div class="tag" onclick="toggleTag(this, 'Indian miniature painting style, intricate details, gold accents, flat composition, decorative borders')">インド細密画(43)</div>
+        <div class="tag" onclick="toggleTag(this, 'Turkish ceramic art style, blue-and-white motifs, floral symmetry, glazed tile texture, radial patterning')">トルコ陶器(44)</div>
+        <div class="tag" onclick="toggleTag(this, 'Ethiopian iconography style, bold outlines, symbolic expressions, primary colors, sacred composition')">エチオピア宗教画(45)</div>
+        <div class="tag" onclick="toggleTag(this, 'neo-expressionist style, aggressive brushwork, distorted proportions, emotionally charged colors, chaotic texture')">ネオエクス(47)</div>
+        <div class="tag" onclick="toggleTag(this, 'optical art style, black and white line patterns, geometric illusions, wave distortion, hypnotic layout')">オプアート(48)</div>
     </div>
 
+    <!-- イラスト -->
     <div id="illustration" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, '90s retro anime style, cel shaded, soft grain, muted vintage colors, nostalgic vibe')">90年代アニメ</div>
-        <div class="tag" onclick="toggleTag(this, 'Studio Ghibli style, lush hand-painted backgrounds, whimsical atmosphere, soft lighting')">ジブリ風</div>
-        <div class="tag" onclick="toggleTag(this, 'American comic book style, heavy ink lines, dot halftone patterns, dramatic shadows')">アメコミ風</div>
-        <div class="tag" onclick="toggleTag(this, 'Vibrant pop art style, bold colors, screen print texture, high contrast')">ポップアート</div>
-        <div class="tag" onclick="toggleTag(this, 'Dark fantasy illustration, eerie atmosphere, intricate details, gothic aesthetic')">ダークファンタジー</div>
+        <div class="tag" onclick="toggleTag(this, 'anime-style, cel-shaded, vibrant color, sharp lineart')">アニメ(1)</div>
+        <div class="tag" onclick="toggleTag(this, 'black and white manga style, bold inking, screentones, dynamic shading')">マンガ(3)</div>
+        <div class="tag" onclick="toggleTag(this, 'Western cartoon style, bold outlines, bright saturated colors, exaggerated expressions')">カートゥーン(6)</div>
+        <div class="tag" onclick="toggleTag(this, 'lo-fi illustration style, muted pastel palette, grainy texture, nostalgic tone, sketchy linework')">ローファイ(9)</div>
+        <div class="tag" onclick="toggleTag(this, 'pixel art style, 8-bit resolution, limited color palette, grid-based texture, retro game look')">ドット絵(13)</div>
+        <div class="tag" onclick="toggleTag(this, 'embroidery style, thread-like textures, fabric background, cross-stitch pixelation')">刺繍ステッチ(15)</div>
+        <div class="tag" onclick="toggleTag(this, 'silhouette illustration style, flat black cutout shapes, glowing backlight, minimalistic forms')">影絵(16)</div>
+        <div class="tag" onclick="toggleTag(this, 'low-poly 3D style, flat shading, visible polygons, geometric forms, early CG look')">ローポリ(20)</div>
+        <div class="tag" onclick="toggleTag(this, 'paper collage style, torn paper edges, layered textures, mixed media fragments, textured depth')">コラージュ(24)</div>
+        <div class="tag" onclick="toggleTag(this, 'crayon drawing style, thick wavy lines, vibrant primary colors, playful texture')">クレヨン(26)</div>
+        <div class="tag" onclick="toggleTag(this, 'spray paint graffiti style, stencil edges, dripping paint, high contrast colors, urban wall texture')">グラフィティ(28)</div>
+        <div class="tag" onclick="toggleTag(this, 'stencil art style, flat shapes, limited color palette, crisp cutout edges, geometric composition')">ステンシル(29)</div>
+        <div class="tag" onclick="toggleTag(this, 'street pop art style, graphic shapes, high contrast colors, heavy outlines, playful iconography')">ストポップ(35)</div>
+        <div class="tag" onclick="toggleTag(this, 'cardboard cutout art style, layered brown textures, hand-cut look, rough edges, shadowed depth')">段ボール(38)</div>
+        <div class="tag" onclick="toggleTag(this, 'unfinished canvas sketch style, pencil underdrawing, visible grid lines, incomplete brushwork, work-in-progress texture')">下書き(39)</div>
+        <div class="tag" onclick="toggleTag(this, 'paper craft animation style, layered paper textures, visible folds, pastel colors, handmade appearance')">ペーパークラフト(41)</div>
+        <div class="tag" onclick="toggleTag(this, 'conceptual art style, minimalism, symbolic placement, clean layout, typographic elements')">コンセプト(46)</div>
+        <div class="tag" onclick="toggleTag(this, 'silkscreen print style, bold color layering, flat shading, clean shapes, limited palette')">シルクスクリーン(49)</div>
+        <div class="tag" onclick="toggleTag(this, 'mascot-style chibi illustration, thick vector lines, bold color blocks, emoji-like facial expressions')">ちびキャラ(50)</div>
     </div>
 
+    <!-- 質感・エフェクト -->
     <div id="material" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, 'Claymation style, handcrafted clay texture, stop-motion aesthetic, fingerprints visible')">クレイアニメ</div>
-        <div class="tag" onclick="toggleTag(this, 'Knitted wool texture, amigurumi style, soft fabric details, cozy atmosphere')">編みぐるみ</div>
-        <div class="tag" onclick="toggleTag(this, 'Stained glass mosaic, vibrant translucent colors, lead outlines, glowing light effect')">ステンドグラス</div>
-        <div class="tag" onclick="toggleTag(this, 'Isometric voxel art, 3D pixel aesthetic, vibrant colors, clean lighting')">ボクセルアート</div>
-        <div class="tag" onclick="toggleTag(this, 'Glitch art aesthetic, digital distortion, chromatic aberration, scanlines')">グリッチ</div>
+        <div class="tag" onclick="toggleTag(this, 'cyberpunk art style, neon glow, dark contrast, futuristic elements, vivid lighting effects')">サイバーパンク(7)</div>
+        <div class="tag" onclick="toggleTag(this, 'glitch art style, chromatic aberration, pixel distortion, fragmented shapes, digital noise')">グリッチ(11)</div>
+        <div class="tag" onclick="toggleTag(this, 'chalkboard drawing style, colored chalk texture, black background, dusty strokes, soft edges')">黒板(14)</div>
+        <div class="tag" onclick="toggleTag(this, 'ink bleed style, liquid spreading effects, abstract shapes, organic textures, experimental look')">インクにじみ(27)</div>
+        <div class="tag" onclick="toggleTag(this, 'woodcut relief style, carved texture, natural woodgrain, deep shadows, tactile surface')">木彫(36)</div>
+        <div class="tag" onclick="toggleTag(this, 'stained glass style, bold leading lines, luminous colored panels, sacred motif composition, radiant glow')">ステンドグラス(37)</div>
     </div>
 
+    <!-- レイアウト・レトロ -->
     <div id="camera" class="tag-content">
-        <div class="tag" onclick="toggleTag(this, 'Shot on 35mm film, vintage grain, warm tones, nostalgic cinematic look')">35mmフィルム</div>
-        <div class="tag" onclick="toggleTag(this, 'Low-angle heroic shot, dramatic perspective, wide angle lens, powerful composition')">ローアングル</div>
-        <div class="tag" onclick="toggleTag(this, 'Fish-eye lens distortion, ultra-wide perspective, quirky 90s music video vibe')">魚眼レンズ</div>
-        <div class="tag" onclick="toggleTag(this, 'Polaroid instant photo, soft focus, faded colors, white border aesthetic')">ポラロイド</div>
-        <div class="tag" onclick="toggleTag(this, 'Security camera footage, grainy black and white, timestamp, eerie surveillance vibe')">監視カメラ</div>
+        <div class="tag" onclick="toggleTag(this, 'VHS tape aesthetic, analog noise, scanlines, muted colors, nostalgic blur')">VHS(12)</div>
+        <div class="tag" onclick="toggleTag(this, 'noir style, high contrast black and white, deep shadows, cinematic lighting, moody tone')">ノワール(17)</div>
+        <div class="tag" onclick="toggleTag(this, 'instant film photo style, faded colors, white frame, slight blur, vintage aesthetic')">ポラロイド(22)</div>
+        <div class="tag" onclick="toggleTag(this, 'Gekiga style, dramatic shading, intense masculine lines, retro Japanese action manga aesthetic')">劇画調</div>
+        <div class="tag" onclick="toggleTag(this, 'Minimalist hand-drawn doodle, quirky illustration, intentional simple linework')">ヘタウマ</div>
+        <div class="tag" onclick="toggleTag(this, 'white background, clean studio lighting, high key')">白背景</div>
+        <div class="tag" onclick="toggleTag(this, 'isometric projection')">アイソメトリック</div>
     </div>
 
     <div class="btn-grid">
@@ -124,7 +163,9 @@
     </div>
 
     <div id="result-area">
-        <div id="img-box" class="img-container"></div>
+        <div id="img-container">
+             <img id="output-img" src="" alt="Generated">
+        </div>
         <div id="seed-display"></div>
     </div>
 </div>
@@ -133,38 +174,47 @@
     let activeTags = [];
 
     window.onload = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const p = urlParams.get('p');
-        if (p) {
-            document.getElementById('mainPrompt').value = decodeURIComponent(p);
-            setTimeout(() => { generate(); }, 500);
-        }
+        const p = new URLSearchParams(window.location.search).get('p');
+        if (p) document.getElementById('mainPrompt').value = decodeURIComponent(p);
     };
 
     function showTab(tabId) {
         document.querySelectorAll('.tag-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
-        const target = document.getElementById(tabId);
-        if(target) target.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
     }
 
     function toggleTag(el, tagValue) {
         el.classList.toggle('active');
-        if (el.classList.contains('active')) activeTags.push(tagValue);
-        else activeTags = activeTags.filter(t => t !== tagValue);
+        if (el.classList.contains('active')) {
+            activeTags.push(tagValue);
+        } else {
+            activeTags = activeTags.filter(t => t !== tagValue);
+        }
     }
 
     function appendMainPrompt(text) {
-        const pArea = document.getElementById('mainPrompt');
-        pArea.value = pArea.value.trim() === "" ? text : pArea.value + ", " + text;
+        const promptArea = document.getElementById('mainPrompt');
+        const currentVal = promptArea.value.trim();
+        if (currentVal === "") {
+            promptArea.value = text;
+        } else {
+            promptArea.value = currentVal + ", " + text;
+        }
+        const btn = event.currentTarget;
+        const originalText = btn.innerText;
+        btn.innerText = "ADDED!";
+        setTimeout(() => btn.innerText = originalText, 1000);
     }
 
-    function resetAll() { if(confirm('Reset?')) location.href = location.pathname; }
+    function resetAll() {
+        if(confirm('リセットしますか？')) location.reload();
+    }
 
     function generate() {
         const base = document.getElementById('mainPrompt').value;
-        if (!base) return;
+        if (!base) return alert('プロンプトを入力してください');
         
         let seed = document.getElementById('seedInput').value;
         if (!seed) {
@@ -173,26 +223,37 @@
         }
 
         const final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&t=${Date.now()}`;
+        
+        // 【強化】キャッシュ回避用のランダムID
+        const bust = Math.random().toString(36).substring(2, 15);
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&counter=${bust}`;
         
         const area = document.getElementById('result-area');
-        const imgBox = document.getElementById('img-box');
+        const img = document.getElementById('output-img');
         
+        // 一旦リセットしてSafariのキャッシュを強制クリア
+        img.src = "";
+        img.style.opacity = '0';
         area.style.display = 'block';
-        document.getElementById('seed-display').innerText = `SEED: ${seed}`;
+        document.getElementById('seed-display').innerText = "Generating...";
 
-        // v3.7ベースの画像更新処理
-        imgBox.innerHTML = ''; 
-        const newImg = document.createElement('img');
-        
-        newImg.onload = () => {
-            newImg.style.opacity = '1';
-            newImg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // わずかな遅延を置いてから読み込み開始
+        setTimeout(() => {
+            img.src = url;
+            document.getElementById('seed-display').innerText = `SEED: ${seed}`;
+        }, 50);
+
+        img.onload = () => {
+            img.style.opacity = '1';
         };
-        
-        // 育美さんの指示通り、onerror内のalert（メッセージ）を削除
-        newImg.src = url;
-        imgBox.appendChild(newImg);
+
+        img.onerror = () => {
+            alert("画像生成に失敗しました。もう一度試してください。");
+        };
+
+        setTimeout(() => {
+            img.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 500);
     }
 
     function retry() {
@@ -203,7 +264,7 @@
     function copyFinalPrompt() {
         const base = document.getElementById('mainPrompt').value;
         const final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        navigator.clipboard.writeText(final).then(() => alert('Copied!'));
+        navigator.clipboard.writeText(final).then(() => alert('コピーしました！'));
     }
 </script>
 </body>
