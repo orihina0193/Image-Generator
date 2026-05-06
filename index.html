@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.7 Full Auto</title>
+    <title>Abinoxx Engine v3.7 Final</title>
     <style>
         :root {
             --bg: #0f1115;
@@ -33,7 +33,6 @@
             box-sizing: border-box; outline: none;
         }
 
-        /* ヘッダーエリア */
         .header-area { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; position: relative; }
         .status-badge { position: absolute; right: 0; font-size: 9px; color: #666; border: 1px solid #333; padding: 2px 6px; border-radius: 5px; }
 
@@ -65,7 +64,7 @@
 
 <div class="container">
     <div class="header-area">
-        <h1>Abinoxx Engine v3.7 改</h1>
+        <h1>Abinoxx Engine v3.7</h1>
         <div id="syncStatus" class="status-badge">READY</div>
     </div>
 
@@ -73,10 +72,7 @@
     <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
 
     <div id="tabNav" class="tab-nav"></div>
-
-    <div id="tagContainer">
-        <p style="font-size: 12px; color: #666; text-align: center;">Loading Tags...</p>
-    </div>
+    <div id="tagContainer"><p style="font-size: 12px; color: #666; text-align: center;">Loading...</p></div>
 
     <div class="btn-grid">
         <button class="gen-btn" onclick="generate()">GENERATE</button>
@@ -97,13 +93,11 @@
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         
-        // 1. プロンプト(p)の受け取り
+        // 1. プロンプト(p)の読み込み
         const p = urlParams.get('p');
-        if (p) {
-            document.getElementById('mainPrompt').value = decodeURIComponent(p);
-        }
+        if (p) document.getElementById('mainPrompt').value = decodeURIComponent(p);
         
-        // 2. タグデータ(t)の受け取りと保存
+        // 2. タグ(t)の読み込み
         const t = urlParams.get('t');
         if (t) {
             try {
@@ -112,28 +106,25 @@
                 localStorage.setItem('abinoxx_tags', JSON.stringify(data));
                 document.getElementById('syncStatus').innerText = "SYNCED";
                 document.getElementById('syncStatus').style.color = "#4cd964";
-            } catch(e) {
-                console.error("Tag Parse Error");
-            }
+            } catch(e) { console.error("Tag Parse Error"); }
         }
 
-        // 3. 表示するタグの決定（URL優先、なければ保存分）
-        const displayData = Object.keys(allTagsData).length > 0 
+        // 3. 表示データの決定
+        const displayData = (Object.keys(allTagsData).length > 0) 
                             ? allTagsData 
                             : JSON.parse(localStorage.getItem('abinoxx_tags') || '{}');
 
         if (Object.keys(displayData).length > 0) {
             renderTags(displayData);
         } else {
-            document.getElementById('tagContainer').innerHTML = '<p style="font-size: 11px; color: #555; text-align: center;">タグデータが見つかりません。<br>ショートカットから起動してください。</p>';
+            document.getElementById('tagContainer').innerHTML = '<p style="font-size: 11px; color: #555; text-align: center;">No tags found.</p>';
         }
     };
 
     function renderTags(data) {
         const nav = document.getElementById('tabNav');
         const container = document.getElementById('tagContainer');
-        nav.innerHTML = '';
-        container.innerHTML = '';
+        nav.innerHTML = ''; container.innerHTML = '';
 
         Object.keys(data).forEach((cat, index) => {
             const tab = document.createElement('div');
@@ -149,8 +140,7 @@
             data[cat].forEach(tagStr => {
                 const parts = tagStr.split(',').map(s => s.trim());
                 const name = parts[0];
-                const val = parts.slice(1).join(', '); // プロンプト内のコンマを許容
-                
+                const val = parts.slice(1).join(', ');
                 const tagEl = document.createElement('div');
                 tagEl.className = 'tag';
                 tagEl.innerText = name;
@@ -169,18 +159,17 @@
     }
 
     function appendMainPrompt(text, el) {
-        const promptArea = document.getElementById('mainPrompt');
-        const currentVal = promptArea.value.trim();
-        promptArea.value = currentVal === "" ? text : currentVal + ", " + text;
+        const area = document.getElementById('mainPrompt');
+        area.value = area.value.trim() === "" ? text : area.value.trim() + ", " + text;
         el.classList.add('active');
         setTimeout(() => el.classList.remove('active'), 300);
     }
+
+    // --- ここから生成・再生成の重要ロジック ---
     function generate() {
-        // 入力欄から最新のテキストを取得
         const base = document.getElementById('mainPrompt').value;
-        if (!base) return alert('プロンプトを入力してください');
-        
-        // SEEDの処理（空ならランダム、あればそれを使う）
+        if (!base) return alert('Input prompt!');
+
         let seed = document.getElementById('seedInput').value;
         if (!seed) {
             seed = Math.floor(Math.random() * 1000000000);
@@ -192,12 +181,11 @@
         const seedDisp = document.getElementById('seed-display');
         
         area.style.display = 'block';
-        img.style.opacity = '0.5';
-        seedDisp.innerText = "Generating...";
+        img.style.opacity = '0.4';
+        seedDisp.innerText = "Generating new image...";
         
-        // キャッシュ回避用のパラメータを追加
-        const bust = Math.random().toString(36).substring(2, 15);
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true&cb=${bust}`;
+        // キャッシュバスター(v)を付けて、同じSEEDでも強制的に再読み込みさせる
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true&v=${Date.now()}`;
         
         img.src = url;
         img.onload = () => {
@@ -207,16 +195,14 @@
         };
     }
 
-    // RETRYボタン：SEEDを空にしてからgenerateを呼ぶ
     function retry() {
-        document.getElementById('seedInput').value = '';
-        generate();
+        document.getElementById('seedInput').value = ''; // SEEDを消す
+        generate(); // 新しいSEEDで生成
     }
 
-    function resetAll() { if(confirm('リセットしますか？')) location.reload(); }
-    function retry() { document.getElementById('seedInput').value = ''; generate(); }
+    function resetAll() { if(confirm('Reset?')) location.reload(); }
     function copyFinalPrompt() {
-        navigator.clipboard.writeText(document.getElementById('mainPrompt').value).then(() => alert('コピーしました！'));
+        navigator.clipboard.writeText(document.getElementById('mainPrompt').value).then(() => alert('Copied!'));
     }
 </script>
 </body>
