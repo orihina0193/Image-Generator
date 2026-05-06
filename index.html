@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.8 Final</title>
+    <title>Abinoxx Engine v3.9</title>
     <style>
         :root {
             --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef;
@@ -20,7 +20,21 @@
         .tab-item.active { background: var(--accent); color: #fff; }
         .tag-content { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 120px; }
         .tag-content.active { display: flex; }
-        .tag { background: var(--tag-bg); border: 1px solid #444; color: #ddd; padding: 8px 12px; border-radius: 12px; font-size: 11px; }
+        
+        /* 通常のタグ */
+        .tag { 
+            background: var(--tag-bg); border: 1px solid #444; color: #ddd; 
+            padding: 8px 12px; border-radius: 12px; font-size: 11px; 
+            transition: all 0.2s ease;
+        }
+        /* 選択中のタグの見た目 */
+        .tag.selected {
+            border-color: var(--accent);
+            background: #441111;
+            color: #fff;
+            box-shadow: 0 0 8px rgba(255, 59, 48, 0.4);
+        }
+
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button { border: none; border-radius: 16px; font-weight: bold; cursor: pointer; padding: 14px; }
         .gen-btn { grid-column: span 2; background: linear-gradient(135deg, #ff3b30, #b31d14); color: white; font-size: 1.2rem; }
@@ -32,17 +46,17 @@
 <body>
 <div class="container">
     <div class="sync-row">
-        <h1>Abinoxx Engine v3.8</h1>
+        <h1>Abinoxx Engine v3.9</h1>
         <button class="paste-btn" onclick="readFromClipboard()">PASTE PROMPT</button>
     </div>
-    <textarea id="mainPrompt" rows="4" placeholder="1. ショートカットからここへ移動&#13;2. PASTE PROMPTを押す"></textarea>
-    <input type="number" id="seedInput" placeholder="SEED (Automatic)">
+    <textarea id="mainPrompt" rows="4" placeholder="ショートカットから英文をコピーして、PASTEを押してください"></textarea>
+    <input type="number" id="seedInput" placeholder="SEED (空欄でランダム)">
     <div id="tabNav" class="tab-nav"></div>
     <div id="tagContainer"></div>
     <div class="btn-grid">
         <button class="gen-btn" onclick="generate()">GENERATE</button>
         <button class="sub-btn" onclick="retry()">RETRY</button>
-        <button class="sub-btn" onclick="location.reload()">RESET</button>
+        <button class="sub-btn" onclick="resetAll()">RESET</button>
     </div>
     <div id="result-area"></div>
 </div>
@@ -50,6 +64,8 @@
 <script>
     let currentTags = {};
     const STORAGE_KEY = 'abinoxx_tags_v3';
+    // 選択中のタグ値を管理
+    let selectedValues = new Set();
 
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -59,7 +75,7 @@
                 currentTags = JSON.parse(decodeURIComponent(t));
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(currentTags));
                 document.querySelector('h1').innerText = "✅ SYNC COMPLETE!";
-                setTimeout(() => { document.querySelector('h1').innerText = "Abinoxx Engine v3.8"; }, 2000);
+                setTimeout(() => { document.querySelector('h1').innerText = "Abinoxx Engine v3.9"; }, 2000);
             } catch(e) { console.error("Sync Error"); }
         } else {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -82,7 +98,9 @@
         const nav = document.getElementById('tabNav');
         const container = document.getElementById('tagContainer');
         nav.innerHTML = ''; container.innerHTML = '';
+        
         Object.keys(data).forEach((cat, index) => {
+            // タブの作成
             const tab = document.createElement('div');
             tab.className = `tab-item ${index === 0 ? 'active' : ''}`;
             tab.innerText = cat;
@@ -92,18 +110,40 @@
                 tab.classList.add('active');
             };
             nav.appendChild(tab);
+
+            // タグコンテナの作成
             const content = document.createElement('div');
             content.id = `cat-${cat}`;
             content.className = `tag-content ${index === 0 ? 'active' : ''}`;
+            
             data[cat].forEach(tagStr => {
                 const parts = tagStr.split(',').map(s => s.trim());
+                const label = parts[0];
+                const value = parts.slice(1).join(', ');
+
                 const tagEl = document.createElement('div');
                 tagEl.className = 'tag';
-                tagEl.innerText = parts[0];
+                tagEl.innerText = label;
+
                 tagEl.onclick = () => {
                     const area = document.getElementById('mainPrompt');
-                    const val = parts.slice(1).join(', ');
-                    area.value = area.value.trim() === "" ? val : area.value.trim() + ", " + val;
+                    let currentText = area.value;
+
+                    if (selectedValues.has(value)) {
+                        // 解除モード
+                        selectedValues.delete(value);
+                        tagEl.classList.remove('selected');
+                        
+                        // 文字列から削除（カンマの処理含む）
+                        let regex = new RegExp(`,?\\s*${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+                        area.value = currentText.replace(regex, '').replace(/^,\s*/, '').trim();
+                    } else {
+                        // 追加モード
+                        selectedValues.add(value);
+                        tagEl.classList.add('selected');
+                        
+                        area.value = currentText.trim() === "" ? value : currentText.trim() + ", " + value;
+                    }
                 };
                 content.appendChild(tagEl);
             });
@@ -131,6 +171,14 @@
     function retry() {
         document.getElementById('seedInput').value = '';
         generate();
+    }
+
+    function resetAll() {
+        document.getElementById('mainPrompt').value = '';
+        document.getElementById('seedInput').value = '';
+        document.getElementById('result-area').innerHTML = '';
+        selectedValues.clear();
+        document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
     }
 </script>
 </body>
