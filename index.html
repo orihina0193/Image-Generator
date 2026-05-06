@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.7 Clipboard</title>
+    <title>Abinoxx Engine v3.7 Final</title>
     <style>
         :root {
             --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef;
@@ -13,14 +13,13 @@
         .container { width: 100%; max-width: 480px; background: var(--card); padding: 20px; border-radius: 28px; box-sizing: border-box; }
         h1 { font-size: 0.9rem; text-align: center; color: var(--accent); letter-spacing: 3px; margin-bottom: 20px; }
         
-        /* クリップボード読み取りボタン */
         .sync-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .paste-btn { background: #2d3440; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; border-radius: 10px; font-size: 11px; cursor: pointer; }
+        .paste-btn { background: #2d3440; border: 1px solid var(--accent); color: var(--accent); padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
         textarea, input { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 14px; border-radius: 16px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; outline: none; }
         
-        .tab-nav { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
-        .tab-item { font-size: 12px; padding: 8px 14px; background: #333; border-radius: 12px; white-space: nowrap; color: #aaa; }
+        .tab-nav { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .tab-item { font-size: 12px; padding: 8px 14px; background: #333; border-radius: 12px; white-space: nowrap; color: #aaa; flex-shrink: 0; }
         .tab-item.active { background: var(--accent); color: #fff; }
         
         .tag-content { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 120px; }
@@ -40,11 +39,11 @@
 <div class="container">
     <div class="sync-row">
         <h1>Abinoxx Engine v3.7</h1>
-        <button class="paste-btn" onclick="readFromClipboard()">PASTE PROMPT</button>
+        <button id="pBtn" class="paste-btn" onclick="readFromClipboard()">PASTE PROMPT</button>
     </div>
     
-    <textarea id="mainPrompt" rows="4" placeholder="Tap 'PASTE PROMPT' to start..."></textarea>
-    <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
+    <textarea id="mainPrompt" rows="4" placeholder="1. ショートカット実行&#13;2. PASTE PROMPTボタンを押す"></textarea>
+    <input type="number" id="seedInput" placeholder="SEED (Automatic)">
     
     <div id="tabNav" class="tab-nav"></div>
     <div id="tagContainer"></div>
@@ -60,7 +59,7 @@
 <script>
     let allTagsData = {};
 
-    // クリップボードからプロンプトを読み取る関数
+    // クリップボード読み取り（ボタンクリック時のみ発動）
     async function readFromClipboard() {
         try {
             const text = await navigator.clipboard.readText();
@@ -68,14 +67,16 @@
                 document.getElementById('mainPrompt').value = text;
             }
         } catch (err) {
-            alert("クリップボードへのアクセスを許可してください");
+            // セキュリティで弾かれた場合は、手動ペースト用の窓を出す
+            const manualText = prompt("クリップボードへのアクセスが許可されませんでした。ここにペーストしてください：");
+            if (manualText) {
+                document.getElementById('mainPrompt').value = manualText;
+            }
         }
     }
 
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // URLからはタグデータ(t)だけを受け取る
         const t = urlParams.get('t');
         if (t) {
             try {
@@ -83,12 +84,8 @@
                 localStorage.setItem('abinoxx_tags', JSON.stringify(allTagsData));
             } catch(e) { console.error("Tag Sync Error"); }
         }
-
         const displayData = Object.keys(allTagsData).length > 0 ? allTagsData : JSON.parse(localStorage.getItem('abinoxx_tags') || '{}');
         if (Object.keys(displayData).length > 0) renderTags(displayData);
-        
-        // 起動時に自動でクリップボードを読みに行く（セキュリティ制限でボタン押しが必要な場合あり）
-        readFromClipboard();
     };
 
     function renderTags(data) {
@@ -114,7 +111,8 @@
                 tagEl.innerText = parts[0];
                 tagEl.onclick = () => {
                     const area = document.getElementById('mainPrompt');
-                    area.value = area.value.trim() === "" ? parts.slice(1).join(', ') : area.value.trim() + ", " + parts.slice(1).join(', ');
+                    const promptVal = parts.slice(1).join(', ');
+                    area.value = area.value.trim() === "" ? promptVal : area.value.trim() + ", " + promptVal;
                 };
                 content.appendChild(tagEl);
             });
