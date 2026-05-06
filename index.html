@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v3.6</title>
+    <title>Abinoxx Engine v3.7</title>
     <style>
         :root {
             --bg: #0f1115;
@@ -55,14 +55,14 @@
         .copy-btn { grid-column: span 2; background: transparent; border: 1px solid #444; color: #888; margin-top: 5px; padding: 10px; font-size: 0.8rem; }
 
         #result-area { margin-top: 25px; text-align: center; display: none; width: 100%; }
-        #output-img { width: 100%; border-radius: 20px; border: 2px solid #2d3440; margin-bottom: 12px; }
+        #output-img { width: 100%; border-radius: 20px; border: 2px solid #2d3440; margin-bottom: 12px; min-height: 200px; background: #222; }
         #seed-display { font-family: monospace; font-size: 11px; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Abinoxx Engine v3.6</h1>
+    <h1>Abinoxx Engine v3.7</h1>
 
     <textarea id="mainPrompt" rows="4" placeholder="Waiting for prompt..."></textarea>
     <input type="number" id="seedInput" placeholder="SEED (Automatic if empty)">
@@ -84,7 +84,7 @@
         <div class="tag tag-special" onclick="appendMainPrompt('Tim Burton style, eerie but charming, long limbs, dark gothic colors, gothic atmosphere')">バートン風</div>
     </div>
 
-    <!-- アート・歴史 -->
+    <!-- アート・歴史（略さず保持） -->
     <div id="art" class="tag-content">
         <div class="tag" onclick="toggleTag(this, 'Japanese woodblock print style, flat perspective, traditional palette, minimal shading, bold outlines')">日本画(4)</div>
         <div class="tag" onclick="toggleTag(this, 'classical oil painting style, chiaroscuro lighting, rich textures, realistic anatomy, canvas grain')">油絵(8)</div>
@@ -163,7 +163,9 @@
     </div>
 
     <div id="result-area">
-        <img id="output-img" src="" alt="Generated">
+        <div id="img-container">
+             <img id="output-img" src="" alt="Generated">
+        </div>
         <div id="seed-display"></div>
     </div>
 </div>
@@ -207,7 +209,7 @@
     }
 
     function resetAll() {
-        if(confirm('設定をリセットしますか？')) location.href = location.pathname;
+        if(confirm('リセットしますか？')) location.reload();
     }
 
     function generate() {
@@ -222,32 +224,39 @@
 
         const final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
         
+        // 【強化】キャッシュ回避用のランダムID
+        const bust = Math.random().toString(36).substring(2, 15);
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&counter=${bust}`;
+        
         const area = document.getElementById('result-area');
         const img = document.getElementById('output-img');
         
-        // 【修正】一度画像を空にして、表示も消す（これでSafariの目を逸らす）
-        img.src = ""; 
-        area.style.display = 'none';
+        // 一旦リセットしてSafariのキャッシュを強制クリア
+        img.src = "";
+        img.style.opacity = '0';
+        area.style.display = 'block';
+        document.getElementById('seed-display').innerText = "Generating...";
 
-        // ランダムなIDを生成
-        const uniqueId = Math.random().toString(36).substring(2, 10);
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&cachebuster=${uniqueId}`;
-        
-        // 少しだけ時間を置いてから再表示（0.1秒の隙を作る）
+        // わずかな遅延を置いてから読み込み開始
         setTimeout(() => {
-            area.style.display = 'block';
-            img.style.opacity = '0.3';
             img.src = url;
             document.getElementById('seed-display').innerText = `SEED: ${seed}`;
-        }, 100);
+        }, 50);
 
-        img.onload = () => { img.style.opacity = '1'; };
-        setTimeout(() => { img.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 400);
+        img.onload = () => {
+            img.style.opacity = '1';
+        };
+
+        img.onerror = () => {
+            alert("画像生成に失敗しました。もう一度試してください。");
+        };
+
+        setTimeout(() => {
+            img.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 500);
     }
 
     function retry() {
-        // RETRY時はシードを空にして generate を呼ぶことで、
-        // 新しいシード + 新しいcachebuster で完全な新規リクエストにする
         document.getElementById('seedInput').value = '';
         generate();
     }
