@@ -75,7 +75,7 @@
         <div class="tab-item" onclick="showTab('camera')">Layout/Retro</div>
     </div>
 
-    <!-- お気に入りタグ（全スタイルを保持） -->
+    <!-- 全スタイルタグの完全復活 -->
     <div id="favorites" class="tag-content active">
         <div class="tag" onclick="appendMainPrompt('Game-style cartoon character, flat colors, bold lines, serious but meta-humorous atmosphere')">メタユーモア</div>
         <div class="tag" onclick="appendMainPrompt('Hand-drawn illustration, detailed texture, calm tones, distinctive character personality')">こだわり手描き</div>
@@ -84,8 +84,37 @@
         <div class="tag" onclick="appendMainPrompt('Tim Burton style, eerie but charming, long limbs, dark gothic colors, gothic atmosphere')">バートン風</div>
     </div>
 
-    <!-- アート・イラスト・質感・レトロタブ（全データを保持） -->
-    <!-- ...省略して記載しますが、実際の全タグが含まれます... -->
+    <div id="art" class="tag-content">
+        <div class="tag" onclick="toggleTag(this, 'Japanese woodblock print style, flat perspective, traditional palette, minimal shading, bold outlines')">日本画(4)</div>
+        <div class="tag" onclick="toggleTag(this, 'classical oil painting style, chiaroscuro lighting, rich textures, realistic anatomy, canvas grain')">油絵(8)</div>
+        <div class="tag" onclick="toggleTag(this, 'Ukiyo-e style, woodcut texture, vibrant mineral pigments, dynamic composition, Edo period aesthetic')">浮世絵</div>
+        <div class="tag" onclick="toggleTag(this, 'Ink wash painting, Sumi-e style, bold brush strokes, Zen aesthetic, masterful use of negative space')">水墨画</div>
+        <div class="tag" onclick="toggleTag(this, 'Cyberpunk aesthetic, neon lighting, rainy streets, high-tech low-life, cinematic atmosphere')">サイバーパンク</div>
+    </div>
+
+    <div id="illustration" class="tag-content">
+        <div class="tag" onclick="toggleTag(this, '90s retro anime style, cel shaded, soft grain, muted vintage colors, nostalgic vibe')">90年代アニメ</div>
+        <div class="tag" onclick="toggleTag(this, 'Studio Ghibli style, lush hand-painted backgrounds, whimsical atmosphere, soft lighting')">ジブリ風</div>
+        <div class="tag" onclick="toggleTag(this, 'American comic book style, heavy ink lines, dot halftone patterns, dramatic shadows')">アメコミ風</div>
+        <div class="tag" onclick="toggleTag(this, 'Vibrant pop art style, bold colors, screen print texture, high contrast')">ポップアート</div>
+        <div class="tag" onclick="toggleTag(this, 'Dark fantasy illustration, eerie atmosphere, intricate details, gothic aesthetic')">ダークファンタジー</div>
+    </div>
+
+    <div id="material" class="tag-content">
+        <div class="tag" onclick="toggleTag(this, 'Claymation style, handcrafted clay texture, stop-motion aesthetic, fingerprints visible')">クレイアニメ</div>
+        <div class="tag" onclick="toggleTag(this, 'Knitted wool texture, amigurumi style, soft fabric details, cozy atmosphere')">編みぐるみ</div>
+        <div class="tag" onclick="toggleTag(this, 'Stained glass mosaic, vibrant translucent colors, lead outlines, glowing light effect')">ステンドグラス</div>
+        <div class="tag" onclick="toggleTag(this, 'Isometric voxel art, 3D pixel aesthetic, vibrant colors, clean lighting')">ボクセルアート</div>
+        <div class="tag" onclick="toggleTag(this, 'Glitch art aesthetic, digital distortion, chromatic aberration, scanlines')">グリッチ</div>
+    </div>
+
+    <div id="camera" class="tag-content">
+        <div class="tag" onclick="toggleTag(this, 'Shot on 35mm film, vintage grain, warm tones, nostalgic cinematic look')">35mmフィルム</div>
+        <div class="tag" onclick="toggleTag(this, 'Low-angle heroic shot, dramatic perspective, wide angle lens, powerful composition')">ローアングル</div>
+        <div class="tag" onclick="toggleTag(this, 'Fish-eye lens distortion, ultra-wide perspective, quirky 90s music video vibe')">魚眼レンズ</div>
+        <div class="tag" onclick="toggleTag(this, 'Polaroid instant photo, soft focus, faded colors, white border aesthetic')">ポラロイド</div>
+        <div class="tag" onclick="toggleTag(this, 'Security camera footage, grainy black and white, timestamp, eerie surveillance vibe')">監視カメラ</div>
+    </div>
 
     <div class="btn-grid">
         <button class="gen-btn" onclick="generate()">GENERATE</button>
@@ -135,7 +164,7 @@
 
     function generate() {
         const base = document.getElementById('mainPrompt').value;
-        if (!base) return alert('プロンプトを入力してください');
+        if (!base) return;
         
         let seed = document.getElementById('seedInput').value;
         if (!seed) {
@@ -144,7 +173,6 @@
         }
 
         const final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
-        // キャッシュ対策のDate.now()
         const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&t=${Date.now()}`;
         
         const area = document.getElementById('result-area');
@@ -153,7 +181,7 @@
         area.style.display = 'block';
         document.getElementById('seed-display').innerText = `SEED: ${seed}`;
 
-        // ★v3.7の構造（imgタグを新品にする）をそのまま使用
+        // v3.7ベースの画像更新処理
         imgBox.innerHTML = ''; 
         const newImg = document.createElement('img');
         
@@ -162,7 +190,7 @@
             newImg.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
         
-        // ★v3.7にあった newImg.onerror = ... を削除（物理除去）
+        // alert（メッセージ）を削除
         newImg.src = url;
         imgBox.appendChild(newImg);
     }
