@@ -222,20 +222,27 @@
 
         const final = base + (activeTags.length > 0 ? ", " + activeTags.join(", ") : "");
         
-        // 最終兵器：ランダムな英数字を作ってURLに混ぜる（cachebuster）
-        const uniqueId = Math.random().toString(36).substring(2, 10);
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&cachebuster=${uniqueId}`;
-        
         const area = document.getElementById('result-area');
         const img = document.getElementById('output-img');
         
-        area.style.display = 'block';
-        img.style.opacity = '0.3';
-        img.src = url;
-        document.getElementById('seed-display').innerText = `SEED: ${seed}`;
+        // 【修正】一度画像を空にして、表示も消す（これでSafariの目を逸らす）
+        img.src = ""; 
+        area.style.display = 'none';
+
+        // ランダムなIDを生成
+        const uniqueId = Math.random().toString(36).substring(2, 10);
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(final)}?seed=${seed}&nologo=true&cachebuster=${uniqueId}`;
+        
+        // 少しだけ時間を置いてから再表示（0.1秒の隙を作る）
+        setTimeout(() => {
+            area.style.display = 'block';
+            img.style.opacity = '0.3';
+            img.src = url;
+            document.getElementById('seed-display').innerText = `SEED: ${seed}`;
+        }, 100);
 
         img.onload = () => { img.style.opacity = '1'; };
-        setTimeout(() => { img.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+        setTimeout(() => { img.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 400);
     }
 
     function retry() {
