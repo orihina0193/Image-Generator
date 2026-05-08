@@ -47,5 +47,3 @@ const TAG_DATA = {
         "天野喜孝 女性, A beautiful woman illustrated in the highly stylized manner of Yoshitaka Amano.  Extremely delicate, flowing linework with elongated, ethereal proportions and graceful, weightless movement.  Soft, translucent watercolor tones with subtle bleeding edges, shimmering highlights, and pale gold accents.  A dreamy, otherworldly atmosphere filled with quiet melancholy, elegance, and Eastern fantasy.  Ornate, swirling decorative motifs that blend abstract shapes with mythical, poetic symbolism.  A serene yet mysterious expression, combining fragile beauty with surreal, celestial presence.  A composition that feels airy and spacious, with elegant negative space and a sense of drifting light."
     ]
 };
-
-};
