@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v4.1</title>
+    <title>Abinoxx Engine v4.2</title>
     <style>
         :root { --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef; --input: #262c36; --tag-bg: #2d3440; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
@@ -11,7 +11,14 @@
         h1 { font-size: 0.8rem; text-align: center; color: var(--accent); letter-spacing: 2px; margin: 10px 0; }
         .sync-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .paste-btn { background: #2d3440; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+        
         textarea { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 12px; border-radius: 16px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box; resize: none; }
+        
+        /* 📐 アスペクト比選択ボタンUI */
+        .ratio-container { display: flex; gap: 8px; margin-bottom: 12px; }
+        .ratio-btn { flex: 1; background: var(--input); border: 1px solid #3d4450; color: #aaa; padding: 8px; border-radius: 12px; font-size: 11px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .ratio-btn.active { background: #441111; border-color: var(--accent); color: #fff; }
+
         .tab-nav { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
         .tab-item { font-size: 11px; padding: 6px 12px; background: #333; border-radius: 10px; white-space: nowrap; color: #aaa; }
         .tab-item.active { background: var(--accent); color: #fff; }
@@ -30,10 +37,18 @@
 <body>
 <div class="container">
     <div class="sync-row">
-        <h1>ABINOXX ENGINE v4.1</h1>
+        <h1>ABINOXX ENGINE v4.2</h1>
         <button class="paste-btn" onclick="readFromClipboard()">PASTE</button>
     </div>
-    <textarea id="mainPrompt" rows="4" placeholder="プロンプトを入力..."></textarea>
+
+    <textarea id="mainPrompt" rows="5" placeholder="プロンプトを入力..."></textarea>
+
+    <div class="ratio-container">
+        <div class="ratio-btn active" id="ratio-9-16" onclick="setRatio(576, 1024, 'ratio-9-16')">📱 縦長 (9:16)</div>
+        <div class="ratio-btn" id="ratio-1-1" onclick="setRatio(1024, 1024, 'ratio-1-1')">⬛ 正方形 (1:1)</div>
+        <div class="ratio-btn" id="ratio-16-9" onclick="setRatio(1024, 576, 'ratio-16-9')">📺 横長 (16:9)</div>
+    </div>
+
     <div id="tabNav" class="tab-nav"></div>
     <div id="tagContainer"></div>
     <div class="btn-grid">
@@ -48,7 +63,23 @@
 
 <script>
     let selectedValues = new Set();
-    window.onload = () => { if (typeof TAG_DATA !== 'undefined') renderTags(TAG_DATA); };
+    
+    // 💡 デフォルトの出力サイズを「縦長 (576 x 1024)」に設定
+    let currentWidth = 576;
+    let currentHeight = 1024;
+
+    window.onload = () => { 
+        if (typeof TAG_DATA !== 'undefined') renderTags(TAG_DATA); 
+    };
+
+    // 📐 サイズを切り替える関数
+    function setRatio(w, h, btnId) {
+        currentWidth = w;
+        currentHeight = h;
+        // ボタンのアクティブ表示の切り替え
+        document.querySelectorAll('.ratio-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(btnId).classList.add('active');
+    }
 
     async function readFromClipboard() {
         const text = await navigator.clipboard.readText();
@@ -101,22 +132,31 @@
     function generate() {
         let base = document.getElementById('mainPrompt').value;
         if (!base) return;
+        
+        // 不要なカンマなどの整理
         base = base.replace(/,\s*,/g, ',').replace(/^,/, '').trim();
+        
         let seed = Math.floor(Math.random() * 1000000000);
         const resultArea = document.getElementById('result-area');
         resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING ON iPhone 17...</p>`;
+        
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
-        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&nologo=true`;
+        
+        // 💡 選択された解像度（currentWidth & currentHeight）をURLパラメーターに自動挿入！
+        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&width=${currentWidth}&height=${currentHeight}&nologo=true`;
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
     }
 
     function retry() { generate(); }
+    
     function resetAll() {
         document.getElementById('mainPrompt').value = '';
         selectedValues.clear();
         document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
         document.getElementById('result-area').innerHTML = '';
+        // デフォルトサイズ（9:16）に戻す
+        setRatio(576, 1024, 'ratio-9-16');
     }
 </script>
 </body>
