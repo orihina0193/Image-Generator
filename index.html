@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v4.2 - Square Edition</title>
+    <title>Abinoxx Engine v7.0 - Hybrid Edition</title>
     <style>
         :root { --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef; --input: #262c36; --tag-bg: #2d3440; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
@@ -14,6 +14,12 @@
         
         textarea { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 12px; border-radius: 16px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box; resize: none; }
         
+        /* 🎨 モデル選択プルダウン用のデザイン */
+        .select-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+        .select-label { font-size: 9px; color: #888; letter-spacing: 1px; text-transform: uppercase; padding-left: 5px; }
+        .model-select { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer; }
+        .model-select:focus { border-color: var(--accent); }
+
         /* 📐 アスペクト比選択ボタンUI（非表示） */
         .ratio-container { display: none; gap: 8px; margin-bottom: 12px; }
 
@@ -35,20 +41,19 @@
 <body>
 <div class="container">
     <div class="sync-row">
-        <h1>ABINOXX ENGINE v4.2 (1024x1024)</h1>
+        <h1>ABINOXX ENGINE v7.0</h1>
         <button class="paste-btn" onclick="readFromClipboard()">PASTE</button>
     </div>
 
     <textarea id="mainPrompt" rows="5" placeholder="プロンプトを入力..."></textarea>
 
-    <!-- ★ いつか戻せるようUI要素はコメントアウトで保持します -->
-    <!--
-    <div class="ratio-container">
-        <div class="ratio-btn" id="ratio-9-16" onclick="setRatio(576, 1024, 'ratio-9-16')">📱 縦長 (9:16)</div>
-        <div class="ratio-btn active" id="ratio-1-1" onclick="setRatio(1024, 1024, 'ratio-1-1')">⬛ 正方形 (1:1)</div>
-        <div class="ratio-btn" id="ratio-16-9" onclick="setRatio(1024, 576, 'ratio-16-9')">📺 横長 (16:9)</div>
+    <div class="select-row">
+        <div class="select-label">ENGINE MODEL</div>
+        <select id="modelSelect" class="model-select">
+            <option value="gptimage-large">🥇 GPTイメージ 1.5 (ゆるかわ本命)</option>
+            <option value="flux" selected>⚡ フラックスシュネル (精密・リアル)</option>
+        </select>
     </div>
-    -->
 
     <div id="tabNav" class="tab-nav"></div>
     <div id="tagContainer"></div>
@@ -65,23 +70,12 @@
 <script>
     let selectedValues = new Set();
     
-    // ★ デフォルトをポリちゃん(Nano Banana 2)が最も得意な 1024x1024 に固定
     let currentWidth = 1024;
     let currentHeight = 1024;
 
     window.onload = () => { 
         if (typeof TAG_DATA !== 'undefined') renderTags(TAG_DATA); 
     };
-
-    // ★ サイズ変更機能は将来のために眠らせておきます
-    /*
-    function setRatio(w, h, btnId) {
-        currentWidth = w;
-        currentHeight = h;
-        document.querySelectorAll('.ratio-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(btnId).classList.add('active');
-    }
-    */
 
     async function readFromClipboard() {
         const text = await navigator.clipboard.readText();
@@ -144,8 +138,13 @@
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
-        // ★ パラメータを最小限に固定。モデル指定(pollen)などは適宜追加可能です
-        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&width=1024&height=1024&nologo=true`;
+        // 💡 プルダウンから選択したモデルの値（gptimage-large か flux）を取得
+        const selectedModel = document.getElementById('modelSelect').value;
+        
+        // 💡 ベースURLは「gen.pollinations.ai/image」に完全に一本化！
+        // 後ろに「model=選んだモデル」をくっつけるスマート仕様に進化しました。
+        newImg.src = `https://gen.pollinations.ai/image/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
+        
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
     }
 
