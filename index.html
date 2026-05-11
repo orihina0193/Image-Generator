@@ -3,26 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v7.0 - Hybrid Edition</title>
+    <title>Abinoxx Engine v7.0 - Hybrid Generation Edition</title>
     <style>
+        /* スタイルは変更なし */
         :root { --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef; --input: #262c36; --tag-bg: #2d3440; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 480px; background: var(--card); padding: 15px; border-radius: 28px; box-sizing: border-box; }
         h1 { font-size: 0.8rem; text-align: center; color: var(--accent); letter-spacing: 2px; margin: 10px 0; }
         .sync-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .paste-btn { background: #2d3440; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; border-radius: 10px; font-size: 10px; font-weight: bold; }
-        
         textarea { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 12px; border-radius: 16px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box; resize: none; }
-        
-        /* 🎨 モデル選択プルダウン用のデザイン */
         .select-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
         .select-label { font-size: 9px; color: #888; letter-spacing: 1px; text-transform: uppercase; padding-left: 5px; }
         .model-select { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer; }
         .model-select:focus { border-color: var(--accent); }
-
-        /* 📐 アスペクト比選択ボタンUI（非表示） */
-        .ratio-container { display: none; gap: 8px; margin-bottom: 12px; }
-
         .tab-nav { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
         .tab-item { font-size: 11px; padding: 6px 12px; background: #333; border-radius: 10px; white-space: nowrap; color: #aaa; }
         .tab-item.active { background: var(--accent); color: #fff; }
@@ -70,6 +64,7 @@
 <script>
     let selectedValues = new Set();
     
+    // サイズは1024x1024に固定
     let currentWidth = 1024;
     let currentHeight = 1024;
 
@@ -83,6 +78,7 @@
     }
 
     function renderTags(data) {
+        // タグ描画処理は変更なし
         const nav = document.getElementById('tabNav');
         const container = document.getElementById('tagContainer');
         nav.innerHTML = ''; container.innerHTML = '';
@@ -131,6 +127,7 @@
         
         base = base.replace(/,\s*,/g, ',').replace(/^,/, '').trim();
         
+        // 毎回違う画像を生成させるため、ランダムなシード値を生成
         let seed = Math.floor(Math.random() * 1000000000);
         const resultArea = document.getElementById('result-area');
         resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING FOR IKUMI...</p>`;
@@ -138,12 +135,13 @@
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
-        // 💡 プルダウンから選択したモデルの値（gptimage-large か flux）を取得
+        // プルダウンから選択したモデルの値（gptimage-large か flux）を取得
         const selectedModel = document.getElementById('modelSelect').value;
         
-        // 💡 ベースURLは「gen.pollinations.ai/image」に完全に一本化！
-        // 後ろに「model=選んだモデル」をくっつけるスマート仕様に進化しました。
-        newImg.src = `https://gen.pollinations.ai/image/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
+        // 💡 育美さんの指摘通り、ベースURLは「昨日までの生成用URL」である
+        // 「image.pollinations.ai/prompt」に完全に一本化！
+        // これで、HTML上の<img>タグが読み込まれた瞬間に、サーバーへの生成リクエストが飛びます。
+        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
     }
