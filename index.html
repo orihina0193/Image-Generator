@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Abinoxx Engine v7.0 - Hybrid Generation Edition</title>
     <style>
-        /* スタイルは変更なし */
+        /* スタイルは一切変更なし */
         :root { --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef; --input: #262c36; --tag-bg: #2d3440; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 480px; background: var(--card); padding: 15px; border-radius: 28px; box-sizing: border-box; }
@@ -133,13 +133,12 @@
         
         const selectedModel = document.getElementById('modelSelect').value;
         
-        // 💡 【2026年最新仕様】URLの形を正しく修正
-        // ドメイン直後に「p/」を挟まず、「/p?prompt=」のクエリ形式で送ることで長い文字数エラーを回避します。
-        // さらに、悪さをしている可能性のある「&enhance=false&nologo=true」を完全にカットしました。
-        const targetUrl = `https://image.pollinations.ai/p?prompt=${encodeURIComponent(base)}&model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
+        // ⭕ 育美さんの正しい元のスラッシュ形式に完全復帰！
+        // 悪さをしていた「&enhance=false&nologo=true」だけを徹底排除した、一番クリーンな最新公式URLです。
+        const targetUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
         
         newImg.onerror = () => {
-            resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">⚠️ 生成エラーが発生しました。<br>URL形式を再確認してください。</p>`;
+            resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">⚠️ エラーが続いています。お手数ですが、プルダウンをもう片方のモデルに切り替えてお試しください。</p>`;
         };
         
         newImg.onload = () => { 
