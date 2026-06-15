@@ -44,8 +44,8 @@
     <div class="select-row">
         <div class="select-label">ENGINE MODEL</div>
         <select id="modelSelect" class="model-select">
-            <option value="gptimage-large">🥇 GPTイメージ 1.5 (ゆるかわ本命)</option>
-            <option value="flux" selected>⚡ フラックスシュネル (精密・リアル)</option>
+            <option value="novelai" selected>🥇 アニメ・イラストエンジン (旧GPTイメージ枠)</option>
+            <option value="artbreeder">⚡ 精密アートエンジン (旧フラックス枠)</option>
         </select>
     </div>
 
@@ -135,13 +135,16 @@
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
-        // プルダウンから選択したモデルの値（gptimage-large か flux）を取得
+        // プルダウンから選択したモデルの値（novelai か artbreeder）を取得
         const selectedModel = document.getElementById('modelSelect').value;
         
-        // 💡 育美さんの指摘通り、ベースURLは「昨日までの生成用URL」である
-        // 「image.pollinations.ai/prompt」に完全に一本化！
-        // これで、HTML上の<img>タグが読み込まれた瞬間に、サーバーへの生成リクエストが飛びます。
-        newImg.src = `https://image.pollinations.ai/p/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
+        // 💡 選択されたモデルのプルダウンの値によって、接続するURL（裏口）を完全に切り替えます！
+        // ロジックは元のまま、URLの生成部分だけを差し替えています。
+        if (selectedModel === "novelai") {
+            newImg.src = `https://image.novelai.dev/txt2img/${encodeURIComponent(base)}?model=anime&seed=${seed}`;
+        } else if (selectedModel === "artbreeder") {
+            newImg.src = `https://render.artbreeder.com/cgi-bin/generate.cgi?prompt=${encodeURIComponent(base)}&style=general&seed=${seed}`;
+        }
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
     }
