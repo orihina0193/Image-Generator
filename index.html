@@ -3,20 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v7.0 - Hybrid Generation Edition</title>
+    <title>Abinoxx Engine v7.0 - Hybrid Edition</title>
     <style>
-        /* スタイルは変更なし */
         :root { --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef; --input: #262c36; --tag-bg: #2d3440; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 480px; background: var(--card); padding: 15px; border-radius: 28px; box-sizing: border-box; }
         h1 { font-size: 0.8rem; text-align: center; color: var(--accent); letter-spacing: 2px; margin: 10px 0; }
         .sync-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .paste-btn { background: #2d3440; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+        
         textarea { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 12px; border-radius: 16px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box; resize: none; }
+        
+        /* 🎨 モデル選択プルダウン用のデザイン */
         .select-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
         .select-label { font-size: 9px; color: #888; letter-spacing: 1px; text-transform: uppercase; padding-left: 5px; }
         .model-select { width: 100%; background: var(--input); border: 1px solid #3d4450; color: #fff; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer; }
         .model-select:focus { border-color: var(--accent); }
+
+        /* 📐 アスペクト比選択ボタンUI（非表示） */
+        .ratio-container { display: none; gap: 8px; margin-bottom: 12px; }
+
         .tab-nav { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
         .tab-item { font-size: 11px; padding: 6px 12px; background: #333; border-radius: 10px; white-space: nowrap; color: #aaa; }
         .tab-item.active { background: var(--accent); color: #fff; }
@@ -64,7 +70,6 @@
 <script>
     let selectedValues = new Set();
     
-    // サイズは1024x1024に固定
     let currentWidth = 1024;
     let currentHeight = 1024;
 
@@ -93,7 +98,7 @@
             nav.appendChild(tab);
             const content = document.createElement('div');
             content.id = `cat-${cat}`;
-            content.className = `tag-content ${index === 0 ? 'active' : ''}`;
+            content.className = `cat-content ${index === 0 ? 'active' : ''}`;
             data[cat].forEach(tagStr => {
                 const parts = tagStr.split(',').map(s => s.trim());
                 const label = parts[0];
@@ -124,29 +129,21 @@
         let base = document.getElementById('mainPrompt').value;
         if (!base) return;
         
-        // 💡 連続するカンマや前後の余白を削除
         base = base.replace(/,\s*,/g, ',').replace(/^,/, '').trim();
-        
-        // 💡【追加】改行を半角スペースに変換し、2つ以上連続するスペースを1つに統合（新サーバー対策のお掃除ロジック）
-        base = base.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ');
         
         let seed = Math.floor(Math.random() * 1000000000);
         const resultArea = document.getElementById('result-area');
-        resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING FOR...</p>`;
+        resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING FOR IKUMI...</p>`;
         
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
-        let selectedModel = document.getElementById('modelSelect').value;
+        const selectedModel = document.getElementById('modelSelect').value;
         
-        if (selectedModel === 'gptimage-large') {
-            selectedModel = 'flux';
-        }
-        
+        // 💡 修正箇所：末尾の「&enhance=false&nologo=true」を完全に削除してスッキリさせました
         newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
-        newImg.onerror = () => { resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">生成に失敗しました。もう一度お試しください。</p>`; };
     }
 
     function retry() { generate(); }
