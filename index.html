@@ -124,7 +124,11 @@
         let base = document.getElementById('mainPrompt').value;
         if (!base) return;
         
+        // 💡 連続するカンマや前後の余白を削除
         base = base.replace(/,\s*,/g, ',').replace(/^,/, '').trim();
+        
+        // 💡【追加】改行を半角スペースに変換し、2つ以上連続するスペースを1つに統合（新サーバー対策のお掃除ロジック）
+        base = base.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ');
         
         let seed = Math.floor(Math.random() * 1000000000);
         const resultArea = document.getElementById('result-area');
@@ -135,12 +139,10 @@
         
         let selectedModel = document.getElementById('modelSelect').value;
         
-        // 💡 サーバー仕様変更対策：gptimage-largeは自動的にfluxを身代わりにします
         if (selectedModel === 'gptimage-large') {
             selectedModel = 'flux';
         }
         
-        // 💡 セキュリティエラーにならないよう、元の安定した直呼び出しURLに修正（余計なパラメータは削除済み）
         newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
