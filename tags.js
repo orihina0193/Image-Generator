@@ -37,7 +37,6 @@ const TAG_DATA = {
         "浮世絵, Japanese woodblock print style, flat perspective, traditional palette, minimal shading, bold outlines",
         "影絵, silhouette illustration style, flat black cutout shapes, glowing backlight, minimalistic forms",
         "アールヌーボー, art nouveau style, flowing lines, floral patterns, soft pastel colors, decorative framing",
-        "コラージュ, paper collage style, torn paper edges, layered textures, mixed media fragments, textured depth",
         "ポップアート, pop art style, bold flat colors, halftone dots, repetition, graphic comic layout",
         "中世細密画, medieval miniature painting style, gold leaf effect, ornamental framing, flat perspective, fine linework",
         "マヤ壁画, Mesoamerican mural style, flat symbolic figures, carved-stone texture, ancient iconography, earthy",
