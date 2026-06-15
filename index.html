@@ -98,7 +98,8 @@
             nav.appendChild(tab);
             const content = document.createElement('div');
             content.id = `cat-${cat}`;
-            content.className = `cat-content ${index === 0 ? 'active' : ''}`;
+            // ⭕ ここを元の正しい「tag-content」に完全に復元しました
+            content.className = `tag-content ${index === 0 ? 'active' : ''}`;
             data[cat].forEach(tagStr => {
                 const parts = tagStr.split(',').map(s => s.trim());
                 const label = parts[0];
@@ -140,7 +141,7 @@
         
         const selectedModel = document.getElementById('modelSelect').value;
         
-        // 💡 修正箇所：末尾の「&enhance=false&nologo=true」を完全に削除してスッキリさせました
+        // 💡 修正箇所：末尾の「&enhance=false&nologo=true」だけをきれいに削除
         newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
