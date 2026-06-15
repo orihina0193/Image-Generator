@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v7.0 - Hybrid Generation Edition</title>
+    <title>Abinoxx Engine v7.0 - Debug Edition</title>
     <style>
-        /* スタイルは変更なし */
         :root { --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef; --input: #262c36; --tag-bg: #2d3440; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 480px; background: var(--card); padding: 15px; border-radius: 28px; box-sizing: border-box; }
@@ -64,7 +63,6 @@
 <script>
     let selectedValues = new Set();
     
-    // サイズは1024x1024に固定
     let currentWidth = 1024;
     let currentHeight = 1024;
 
@@ -78,7 +76,6 @@
     }
 
     function renderTags(data) {
-        // タグ描画処理は変更なし
         const nav = document.getElementById('tabNav');
         const container = document.getElementById('tagContainer');
         nav.innerHTML = ''; container.innerHTML = '';
@@ -127,7 +124,6 @@
         
         base = base.replace(/,\s*,/g, ',').replace(/^,/, '').trim();
         
-        // 毎回違う画像を生成させるため、ランダムなシード値を生成
         let seed = Math.floor(Math.random() * 1000000000);
         const resultArea = document.getElementById('result-area');
         resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING FOR IKUMI...</p>`;
@@ -135,13 +131,20 @@
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
-        // プルダウンから選択したモデルの値（gptimage-large か flux）を取得
         const selectedModel = document.getElementById('modelSelect').value;
+        const targetUrl = `https://image.pollinations.ai/prompt?prompt=${encodeURIComponent(base)}&model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
         
-        // 💡 修正箇所：URLの組み立て方を昨日までの完璧な「クエリパラメータ形式」に100%復元しました！
-        newImg.src = `https://image.pollinations.ai/prompt?prompt=${encodeURIComponent(base)}&model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
+        // 💡 エラー検知用ロジックを追加
+        newImg.onerror = () => {
+            resultArea.innerHTML = `<p style="font-size:12px;color:#ff3b30;font-weight:bold;">⚠️ 画像の読み込みに失敗しました。<br><span style="font-size:9px;color:#aaa;">URL: ${targetUrl}</span></p>`;
+        };
         
-        newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
+        newImg.onload = () => { 
+            resultArea.innerHTML = ''; 
+            resultArea.appendChild(newImg); 
+        };
+        
+        newImg.src = targetUrl;
     }
 
     function retry() { generate(); }
