@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v7.0 - Hybrid Generation Edition</title>
+    <title>Abinoxx Engine v7.2 - Auth Edition</title>
     <style>
         /* スタイルは一切変更なし */
         :root { --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef; --input: #262c36; --tag-bg: #2d3440; }
@@ -35,7 +35,7 @@
 <body>
 <div class="container">
     <div class="sync-row">
-        <h1>ABINOXX ENGINE v7.0</h1>
+        <h1>ABINOXX ENGINE v7.2</h1>
         <button class="paste-btn" onclick="readFromClipboard()">PASTE</button>
     </div>
 
@@ -133,12 +133,12 @@
         
         const selectedModel = document.getElementById('modelSelect').value;
         
-        // ⭕ 育美さんの正しい元のスラッシュ形式に完全復帰！
-        // 悪さをしていた「&enhance=false&nologo=true」だけを徹底排除した、一番クリーンな最新公式URLです。
-        const targetUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
+        // ⭕ 公式で生成に成功したURLの形式・ドメインを完全にトレース！
+        // 末尾に最新必須パラメータの「&key=YOUR_API_KEY」を強制的にドッキングさせました
+        const targetUrl = `https://gen.pollinations.ai/image/${encodeURIComponent(base)}?model=${selectedModel}&width=1024&height=1024&seed=${seed}&key=YOUR_API_KEY`;
         
         newImg.onerror = () => {
-            resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">⚠️ エラーが続いています。お手数ですが、プルダウンをもう片方のモデルに切り替えてお試しください。</p>`;
+            resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">⚠️ 生成エラー。認証キーの形式が変更された可能性があります。</p>`;
         };
         
         newImg.onload = () => { 
