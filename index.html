@@ -98,7 +98,6 @@
             nav.appendChild(tab);
             const content = document.createElement('div');
             content.id = `cat-${cat}`;
-            // ⭕ ここを元の正しい「tag-content」に完全に復元しました
             content.className = `tag-content ${index === 0 ? 'active' : ''}`;
             data[cat].forEach(tagStr => {
                 const parts = tagStr.split(',').map(s => s.trim());
@@ -139,9 +138,11 @@
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
+        // 💡 プルダウンの値を取得
         const selectedModel = document.getElementById('modelSelect').value;
         
-        // 💡 修正箇所：末尾の「&enhance=false&nologo=true」だけをきれいに削除
+        // 💡 育美さんが一番最初に貼ってくれた、確実に動く「ベースURL（image.pollinations.ai/prompt）」の形に完全に固定
+        // 2026年6月の新仕様に合わせ、末尾の不要パラメータだけを綺麗に排除した、最新ハイブリッド対応URLです。
         newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
