@@ -43,8 +43,8 @@
     <div class="select-row">
         <div class="select-label">ENGINE MODEL</div>
         <select id="modelSelect" class="model-select">
-            <option value="stabilityai/stable-diffusion-3.5-large">🥇 SD 3.5 Large (イラスト・本命)</option>
-            <option value="black-forest-labs/FLUX.1-schnell" selected>⚡ フラックスシュネル (精密・リアル)</option>
+            <option value="gptimage-large">🥇 GPTイメージ 1.5 (ゆるかわ本命)</option>
+            <option value="flux" selected>⚡ フラックスシュネル (精密・リアル)</option>
         </select>
     </div>
 
@@ -117,65 +117,15 @@
         });
     }
 
-    // 💡 完全ノーキー・ノーガードで通信を受け付けるゲートウェイを採用
-    async function generate() {
+    function generate() {
         let base = document.getElementById('mainPrompt').value;
         if (!base) return;
-        
         base = base.replace(/,\s*,/g, ',').replace(/^,/, '').trim();
-        
         let seed = Math.floor(Math.random() * 1000000000);
         const resultArea = document.getElementById('result-area');
-        resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING YOUR AI MASTERPIECE...</p>`;
+        resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING FOR IKUMI...</p>`;
+        const newImg = document.createElement('img');
+        newImg.className = 'generated-img';
         
-        const selectedModel = document.getElementById('modelSelect').value;
-
-        try {
-            // 🚀 トークン不要でHugging Faceのモデルを直接叩けるオープンプロキシをFetch
-            const response = await fetch(`https://ai.neatspace.org/api/generate/${selectedModel}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                    // 💡 Authorization（キー）は一切不要！GitHubスキャンも100%安全
-                },
-                body: JSON.stringify({
-                    prompt: base,
-                    seed: seed,
-                    width: 1024,
-                    height: 1024
-                })
-            });
-
-            if (!response.ok) throw new Error("サーバーエラー");
-
-            const blob = await response.blob();
-            const imageObjectURL = URL.createObjectURL(blob);
-
-            const newImg = document.createElement('img');
-            newImg.className = 'generated-img';
-            newImg.src = imageObjectURL;
-
-            newImg.onload = () => {
-                resultArea.innerHTML = '';
-                resultArea.appendChild(newImg);
-            };
-
-        } catch (error) {
-            console.error(error);
-            resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATION ERROR. RETRY PLEASE.</p>`;
-        }
-    }
-
-    function retry() { generate(); }
-    
-    function resetAll() {
-        document.getElementById('mainPrompt').value = '';
-        selectedValues.clear();
-        document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
-        document.getElementById('result-area').innerHTML = '';
-        currentWidth = 1024;
-        currentHeight = 1024;
-    }
-</script>
-</body>
-</html>
+        // ✅ 修正箇所：モデル指定を削除して安定動作に
+        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}
