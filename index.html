@@ -126,6 +126,26 @@
         resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING FOR IKUMI...</p>`;
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
-        
-        // ✅ 修正箇所：モデル指定を削除して安定動作に
-        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}
+
+        // 🔧 修正箇所：model= を削除して安定動作に
+        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?seed=${seed}&width=1024&height=1024`;
+
+        newImg.onload = () => { 
+            resultArea.innerHTML = ''; 
+            resultArea.appendChild(newImg); 
+        };
+    }
+
+    function retry() { generate(); }
+    
+    function resetAll() {
+        document.getElementById('mainPrompt').value = '';
+        selectedValues.clear();
+        document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
+        document.getElementById('result-area').innerHTML = '';
+        currentWidth = 1024;
+        currentHeight = 1024;
+    }
+</script>
+</body>
+</html>
