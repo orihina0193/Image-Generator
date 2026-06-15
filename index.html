@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Abinoxx Engine v7.1 - Emergency Route</title>
+    <title>Abinoxx Engine v7.0 - Hybrid Generation Edition</title>
     <style>
+        /* スタイルは変更なし */
         :root { --bg: #0f1115; --card: #1b1e24; --accent: #ff3b30; --text: #efefef; --input: #262c36; --tag-bg: #2d3440; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 480px; background: var(--card); padding: 15px; border-radius: 28px; box-sizing: border-box; }
@@ -34,7 +35,7 @@
 <body>
 <div class="container">
     <div class="sync-row">
-        <h1>ABINOXX ENGINE v7.1</h1>
+        <h1>ABINOXX ENGINE v7.0</h1>
         <button class="paste-btn" onclick="readFromClipboard()">PASTE</button>
     </div>
 
@@ -43,7 +44,7 @@
     <div class="select-row">
         <div class="select-label">ENGINE MODEL</div>
         <select id="modelSelect" class="model-select">
-            <option value="gptimage-large">🥇 GPTイメージ 1.5 (ゆるかわ)</option>
+            <option value="gptimage-large">🥇 GPTイメージ 1.5 (ゆるかわ本命)</option>
             <option value="flux" selected>⚡ フラックスシュネル (精密・リアル)</option>
         </select>
     </div>
@@ -61,7 +62,6 @@
 <script src="tags.js"></script>
 
 <script>
-    // タグ処理系ロジックは完全維持
     let selectedValues = new Set();
     let currentWidth = 1024;
     let currentHeight = 1024;
@@ -114,7 +114,7 @@
                 };
                 content.appendChild(tagEl);
             });
-            containers.appendChild(content);
+            container.appendChild(content);
         });
     }
 
@@ -126,24 +126,25 @@
         
         let seed = Math.floor(Math.random() * 1000000000);
         const resultArea = document.getElementById('result-area');
-        resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">EMERGENCY ROUTE GENERATING...</p>`;
+        resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING FOR IKUMI...</p>`;
         
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
         const selectedModel = document.getElementById('modelSelect').value;
         
-        // 🚨 通信ドメインを「gen.pollinations.ai」へ緊急迂回
-        // プロンプトはスラッシュで繋ぐ元の正しいロジックを維持しつつ、ドメインだけ差し替え
-        const targetUrl = `https://gen.pollinations.ai/image/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024&nologo=true`;
+        // 💡 【2026年最新仕様】URLの形を正しく修正
+        // ドメイン直後に「p/」を挟まず、「/p?prompt=」のクエリ形式で送ることで長い文字数エラーを回避します。
+        // さらに、悪さをしている可能性のある「&enhance=false&nologo=true」を完全にカットしました。
+        const targetUrl = `https://image.pollinations.ai/p?prompt=${encodeURIComponent(base)}&model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
+        
+        newImg.onerror = () => {
+            resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">⚠️ 生成エラーが発生しました。<br>URL形式を再確認してください。</p>`;
+        };
         
         newImg.onload = () => { 
             resultArea.innerHTML = ''; 
             resultArea.appendChild(newImg); 
-        };
-        
-        newImg.onerror = () => {
-            resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">⚠️ 迂回ルートでも失敗しました。<br>Pollinationsサーバー自体の障害です。</p>`;
         };
         
         newImg.src = targetUrl;
