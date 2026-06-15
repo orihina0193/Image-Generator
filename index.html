@@ -78,7 +78,6 @@
     }
 
     function renderTags(data) {
-        // タグ描画処理は変更なし
         const nav = document.getElementById('tabNav');
         const container = document.getElementById('tagContainer');
         nav.innerHTML = ''; container.innerHTML = '';
@@ -127,7 +126,6 @@
         
         base = base.replace(/,\s*,/g, ',').replace(/^,/, '').trim();
         
-        // 毎回違う画像を生成させるため、ランダムなシード値を生成
         let seed = Math.floor(Math.random() * 1000000000);
         const resultArea = document.getElementById('result-area');
         resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">GENERATING FOR...</p>`;
@@ -135,20 +133,18 @@
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
-        // プルダウンから選択したモデルの値を取得
         let selectedModel = document.getElementById('modelSelect').value;
         
-        // 💡 サーバー側の仕様変更対策
-        // gptimage-large（古い名称）が指定された場合は、現在確実に動く「flux」に内部で切り替える安全処理
+        // 💡 サーバー仕様変更対策：gptimage-largeは自動的にfluxを身代わりにします
         if (selectedModel === 'gptimage-large') {
             selectedModel = 'flux';
         }
         
-        // 💡 廃止された「&enhance=false&nologo=true」を削除して裏注文をクリーンに通します！
+        // 💡 セキュリティエラーにならないよう、元の安定した直呼び出しURLに修正（余計なパラメータは削除済み）
         newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
-        newImg.onerror = () => { resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">サーバーが混雑しているかエラーが発生しました。リトライしてください。</p>`; };
+        newImg.onerror = () => { resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">生成に失敗しました。もう一度お試しください。</p>`; };
     }
 
     function retry() { generate(); }
