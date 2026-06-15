@@ -135,15 +135,20 @@
         const newImg = document.createElement('img');
         newImg.className = 'generated-img';
         
-        // プルダウンから選択したモデルの値（gptimage-large か flux）を取得
-        const selectedModel = document.getElementById('modelSelect').value;
+        // プルダウンから選択したモデルの値を取得
+        let selectedModel = document.getElementById('modelSelect').value;
         
-        // 💡 育美さんの指摘通り、ベースURLは「昨日までの生成用URL」である
-        // 「image.pollinations.ai/prompt」に完全に一本化！
-        // これで、HTML上の<img>タグが読み込まれた瞬間に、サーバーへの生成リクエストが飛びます。
-        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
+        // 💡 サーバー側の仕様変更対策
+        // gptimage-large（古い名称）が指定された場合は、現在確実に動く「flux」に内部で切り替える安全処理
+        if (selectedModel === 'gptimage-large') {
+            selectedModel = 'flux';
+        }
+        
+        // 💡 廃止された「&enhance=false&nologo=true」を削除して裏注文をクリーンに通します！
+        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024`;
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
+        newImg.onerror = () => { resultArea.innerHTML = `<p style="font-size:10px;color:#ff3b30;">サーバーが混雑しているかエラーが発生しました。リトライしてください。</p>`; };
     }
 
     function retry() { generate(); }
