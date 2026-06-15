@@ -141,7 +141,7 @@
         // 💡 育美さんの指摘通り、ベースURLは「昨日までの生成用URL」である
         // 「image.pollinations.ai/prompt」に完全に一本化！
         // これで、HTML上の<img>タグが読み込まれた瞬間に、サーバーへの生成リクエストが飛びます。
-        newImg.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
+        newImg.src = `https://image.pollinations.ai/p/${encodeURIComponent(base)}?model=${selectedModel}&seed=${seed}&width=1024&height=1024&enhance=false&nologo=true`;
         
         newImg.onload = () => { resultArea.innerHTML = ''; resultArea.appendChild(newImg); };
     }
