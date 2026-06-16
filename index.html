@@ -90,8 +90,8 @@
   <script type="text/babel" data-presets="classic-react">
     const { useState, useEffect } = React;
 
-    // Use window.TAG_DATA from external tags.js if present, otherwise fall back to built-in configuration
-    const TAG_DATA = window.TAG_DATA || {
+    // Define the default complete tag dataset
+    const DEFAULT_TAG_DATA = {
       "背景 (Background)": [
         "背景透過, Make the background transparent",
         "🌃 ナイト渋谷, neon-drenched Tokyo Shibuya street at night, reflective rain patches on asphalt",
@@ -175,6 +175,11 @@
         "スマホ壁紙, (--ar 9:16)"
       ]
     };
+
+    // Merge window.TAG_DATA from external tags.js if present to preserve custom edits while keeping all categories
+    const TAG_DATA = window.TAG_DATA
+      ? { ...DEFAULT_TAG_DATA, ...window.TAG_DATA }
+      : DEFAULT_TAG_DATA;
 
     // Self-contained Icon helper returning high quality crisp SVG path vectors
     function Icon({ name, className = "w-4 h-4" }) {
