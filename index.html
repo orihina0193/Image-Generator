@@ -72,7 +72,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  <!-- Custom tags configuration external file -->
+  <!-- Load custom tags configuration from external file -->
   <script src="tags.js"></script>
 </head>
 <body class="text-gray-200 min-h-screen relative font-sans Selection:bg-cyber-red/20 selection:text-white">
@@ -80,7 +80,9 @@
   <!-- React mounting container -->
   <div id="root"></div>
 
-  <script type="text/babel" data-type="module">
+  <script type="text/babel">
+    /** @jsxRuntime classic */
+    /** @jsx React.createElement */
     const { useState, useEffect } = React;
 
     // Use window.TAG_DATA from external tags.js if present, otherwise fall back to built-in configuration
