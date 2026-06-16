@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> AI IMAGE GENERATOR v7.0</title>
+  <title> AI IMAGE GENERATOR v7.1</title>
   
   <!-- Tailwind CSS Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -71,6 +71,13 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    Babel.registerPreset('classic-react', {
+      presets: [
+        [Babel.availablePresets['react'], { runtime: 'classic' }]
+      ]
+    });
+  </script>
   
   <!-- Load custom tags configuration from external file -->
   <script src="tags.js"></script>
@@ -80,9 +87,7 @@
   <!-- React mounting container -->
   <div id="root"></div>
 
-  <script type="text/babel">
-    /** @jsxRuntime classic */
-    /** @jsx React.createElement */
+  <script type="text/babel" data-presets="classic-react">
     const { useState, useEffect } = React;
 
     // Use window.TAG_DATA from external tags.js if present, otherwise fall back to built-in configuration
