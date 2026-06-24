@@ -143,6 +143,10 @@
         "FF6 街, A ruined yet thriving mechanical city inspired by the world of Final Fantasy VI. A mix of decaying industrial structures, steam-powered machinery, and remnants of lost technology. A lone girl standing within the cityscape, blending fantasy and retro‑mechanical aesthetics. A dramatic, atmospheric scene with a sense of melancholy and quiet resilience."
       ],
       "主役 (Subjects)": [
+        "👨 男性, a handsome adult man, detailed features, elegant posture",
+        "👩 女性, a beautiful elegant woman, detailed features, expressive eyes",
+        "👦 少年, a young boy, cute expression, detailed hair",
+        "👧 少女, a young girl, cute sweet expression, detailed hair",
         "👧 アニメ女子, a beautiful anime girl, detailed expressive hair, flowing outfit",
         "👦 アニメ男子, a stylish cool anime boy, detailed hair, elegant posture",
         "🤖 サイバーロボ, sleek tactical humanoid robot, high-tech armored composite armor plating",
@@ -313,6 +317,7 @@
 
     function App() {
       const [prompt, setPrompt] = useState("");
+      const [model, setModel] = useState("flux");
       const [aspectRatio, setAspectRatio] = useState("1:1");
       const [seed, setSeed] = useState(() => Math.floor(Math.random() * 9999999));
       const [isManualSeed, setIsManualSeed] = useState(false);
@@ -436,7 +441,8 @@
         else if (aspectRatio === "4:3") { width = 1152; height = 864; }
         else if (aspectRatio === "3:4") { width = 864; height = 1152; }
 
-        const directUrl = `https://image.pollinations.ai/p/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${activeSeed}&model=flux&nologo=true`;
+        const modelParam = model === "stable-diffusion" ? "turbo" : "flux";
+        const directUrl = `https://image.pollinations.ai/p/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${activeSeed}&model=${modelParam}&nologo=true`;
 
         try {
           // Preload image to ensure loading animation matches download complete
@@ -445,9 +451,17 @@
           img.crossOrigin = "anonymous";
           
           img.onload = () => {
+            const engineLabelFull = model === "stable-diffusion" 
+              ? "Stable Diffusion (SDXL - Pollinations Client-Side Direct)"
+              : "FLUX.1 Schnell (Pollinations Client-Side Direct)";
+
+            const engineLabelShort = model === "stable-diffusion"
+              ? "Stable Diffusion"
+              : "FLUX.1 Schnell";
+
             setResultImage(directUrl);
             setResultDetails({
-              engine: "FLUX.1 Schnell (Pollinations Client-Side Direct)",
+              engine: engineLabelFull,
               prompt: prompt,
               seed: activeSeed,
             });
@@ -457,7 +471,7 @@
               id: Math.random().toString(36).substring(2, 9),
               imageUrl: directUrl,
               prompt: prompt,
-              engine: "FLUX.1 Schnell",
+              engine: engineLabelShort,
               aspectRatio: aspectRatio,
               seed: activeSeed,
               timestamp: new Date().toLocaleTimeString(),
@@ -670,6 +684,41 @@
                   ENGINE CONFIGURATION
                 </h2>
 
+                {/* Engine Selector */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">
+                    ENGINE MODEL (IMAGE BACKEND)
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: "flux", name: "⚡ FLUX.1 Schnell", desc: "本命・超高画質・リアル" },
+                      { id: "stable-diffusion", name: "🎨 Stable Diffusion", desc: "高速・クラシック・軽量" },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setModel(item.id)}
+                        className={`flex flex-col p-3 rounded-xl border transition-all text-left relative group ${
+                          model === item.id
+                            ? "bg-red-950/40 border-cyber-red text-white"
+                            : "bg-slate-950 hover:bg-slate-800 border-slate-800 text-gray-400"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-[11px] font-bold font-mono tracking-tight group-hover:text-white transition-colors">
+                            {item.name}
+                          </span>
+                          {model === item.id && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyber-red animate-pulse" />
+                          )}
+                        </div>
+                        <span className="text-[9px] text-gray-500 block truncate w-full mt-1">
+                          {item.desc}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Aspect ratio */}
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">
@@ -806,7 +855,7 @@
                       <div className="bg-slate-950/60 border border-slate-800/60 rounded-xl p-3 text-xs flex flex-col gap-1.5 font-mono">
                         <div className="flex justify-between">
                           <span className="text-gray-500">ENGINE:</span>
-                          <span className="text-cyber-red font-semibold">FLUX.1 Schnell</span>
+                          <span className="text-cyber-red font-semibold">{resultDetails.engine || "FLUX.1 Schnell"}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-500">SEED :</span>
