@@ -445,8 +445,76 @@
         else if (aspectRatio === "4:3") { width = 1152; height = 864; }
         else if (aspectRatio === "3:4") { width = 864; height = 1152; }
 
-        const modelParam = model === "stable-diffusion" ? "turbo" : "flux";
-        const directUrl = `https://image.pollinations.ai/p/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${activeSeed}&model=${modelParam}&nologo=true`;
+        // 1. Detect Japanese and auto-translate via Google Translate client-side direct fetch
+        const hasJapanese = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(prompt);
+        let englishPrompt = prompt;
+
+        if (hasJapanese) {
+          try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=en&dt=t&q=${encodeURIComponent(prompt)}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data[0]) {
+                englishPrompt = data[0].map(x => x[0]).join("").trim();
+              }
+            }
+          } catch (err) {
+            console.warn("Client translation fallback error:", err);
+          }
+        }
+
+        // 2. Apply high-fidelity Japanese subculture tag boosting
+        function boostJapanesePromptNuances(originalJa, translatedEn) {
+          let boosted = translatedEn;
+          const boosters = [
+            { ja: /着ぐるみ|きぐるみ/, tags: ["kigurumi", "onesie costume"] },
+            { ja: /三白眼/, tags: ["sanpaku eyes", "sharp glare", "unfriendly glare"] },
+            { ja: /目つき[がの]悪い/, tags: ["grumpy glare", "glaring eyes", "sharp look"] },
+            { ja: /前髪ぱっつん|ぱっつん/, tags: ["straight bangs", "blunt bangs"] },
+            { ja: /ジト目/, tags: ["jitome", "staring cold eyes", "uninterested look"] },
+            { ja: /ちびキャラ|ミニキャラ|デフォルメ|デフォルメキャラ/, tags: ["chibi character", "miniature style", "deformed chibi"] },
+            { ja: /八重歯/, tags: ["yaeba", "cute fang"] },
+            { ja: /アホ毛/, tags: ["ahoge", "antenna hair"] },
+            { ja: /ツインテール/, tags: ["twintails"] },
+            { ja: /ポニーテール/, tags: ["ponytail"] },
+            { ja: /セーラー服/, tags: ["sailor suit school uniform"] },
+            { ja: /メイド服|メイド/, tags: ["maid outfit"] },
+            { ja: /巫女服|巫女/, tags: ["miko outfit", "shrine maiden clothing"] },
+            { ja: /立ち絵/, tags: ["standing full body portrait", "character design sheet"] },
+            { ja: /水着|ビキニ/, tags: ["swimsuit", "bikini"] },
+            { ja: /ロリキャラ|ロリ/, tags: ["loli style girl"] },
+          ];
+
+          for (const booster of boosters) {
+            if (booster.ja.test(originalJa)) {
+              const missingTags = booster.tags.filter(tag => !new RegExp(`\\b${tag.split(" ")[0]}\\b`, 'i').test(boosted));
+              if (missingTags.length > 0) {
+                boosted = `${boosted}, ${missingTags.join(", ")}`;
+              }
+            }
+          }
+          return boosted;
+        }
+
+        let finalPrompt = hasJapanese ? boostJapanesePromptNuances(prompt, englishPrompt) : prompt;
+
+        // 3. Map model param and specific tags based on selected engine model
+        let modelParam = "flux";
+        if (model === "stable-diffusion") {
+          modelParam = "turbo";
+          finalPrompt = `masterpiece, highly detailed, ${finalPrompt}`;
+        } else if (model === "flux-anime" || model === "any-dark" || model === "flux-3d") {
+          modelParam = model;
+          if (model === "any-dark") {
+            finalPrompt = `score_9, score_8_up, score_7_up, source_anime, masterpiece, aesthetic, detailed, ${finalPrompt}`;
+          } else if (model === "flux-3d") {
+            finalPrompt = `cute 3D clay toy, 3D chibi figurine of ${finalPrompt}, toy material, vibrant soft lighting, miniature style, detailed 3D render`;
+          } else if (model === "flux-anime") {
+            finalPrompt = `beautiful anime style illustration of ${finalPrompt}, high quality anime art, aesthetic, vibrant colors, clean lines`;
+          }
+        }
+
+        const directUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=${width}&height=${height}&seed=${activeSeed}&model=${modelParam}&nologo=true`;
 
         try {
           // Preload image to ensure loading animation matches download complete
@@ -455,13 +523,17 @@
           img.crossOrigin = "anonymous";
           
           img.onload = () => {
-            const engineLabelFull = model === "stable-diffusion" 
-              ? "Stable Diffusion (SDXL - Pollinations Client-Side Direct)"
-              : "FLUX.1 Schnell (Pollinations Client-Side Direct)";
+            const engineLabelMap = {
+              "flux": { short: "FLUX.1 Schnell", full: "FLUX.1 Schnell (Pollinations Client-Side Direct)" },
+              "flux-anime": { short: "FLUX Anime", full: "FLUX Anime (2D Specialized Client-Side Direct)" },
+              "any-dark": { short: "Pony V6 / 2D", full: "Pony V6 / 2D Anime (Client-Side Direct)" },
+              "flux-3d": { short: "FLUX 3D Toy", full: "FLUX 3D Toy (Clay figurine Client-Side Direct)" },
+              "stable-diffusion": { short: "Stable Diffusion", full: "Stable Diffusion (SDXL Turbo Client-Side Direct)" }
+            };
 
-            const engineLabelShort = model === "stable-diffusion"
-              ? "Stable Diffusion"
-              : "FLUX.1 Schnell";
+            const labelConfig = engineLabelMap[model] || engineLabelMap["flux"];
+            const engineLabelFull = labelConfig.full;
+            const engineLabelShort = labelConfig.short;
 
             setResultImage(directUrl);
             setResultDetails({
@@ -695,13 +767,18 @@
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { id: "flux", name: "⚡ FLUX.1 Schnell", desc: "本命・超高画質・リアル" },
-                      { id: "stable-diffusion", name: "🎨 Stable Diffusion", desc: "高速・クラシック・軽量" },
+                      { id: "flux", name: "⚡ FLUX Schnell", desc: "リアル・写真質感・最高画質" },
+                      { id: "flux-anime", name: "🌸 FLUX Anime", desc: "繊細イラスト・2Dアニメ特化" },
+                      { id: "any-dark", name: "🦄 Pony V6 / 2D", desc: "デフォルメ・萌え・ポップ調" },
+                      { id: "flux-3d", name: "🧸 FLUX 3D Toy", desc: "3D粘土フィギュア・立体トイ風" },
+                      { id: "stable-diffusion", name: "🎨 SDXL Turbo", desc: "超高速・クラシック軽量コア" },
                     ].map((item) => (
                       <button
                         key={item.id}
                         onClick={() => setModel(item.id)}
                         className={`flex flex-col p-3 rounded-xl border transition-all text-left relative group ${
+                          item.id === "stable-diffusion" ? "col-span-2" : ""
+                        } ${
                           model === item.id
                             ? "bg-red-950/40 border-cyber-red text-white"
                             : "bg-slate-950 hover:bg-slate-800 border-slate-800 text-gray-400"
