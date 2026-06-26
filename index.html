@@ -104,9 +104,9 @@
         "写真風, photo-realistic",
         "ペーパークラフト, paper cutout art",
         "ベタ塗り, flat color",
-        "🚫 影なし (完全フラット), flat colors, no shading, no shadows, 2d vector art, clean flat vector illustration, zero shadows, unlit, flat shading",
+        "🚫 影なし (完全フラット), absolute flat 2D vector art, solid color fills, zero gradients, sticker graphic style, minimalist flat illustration, high-contrast solid paint, unshaded",
         "🎨 フラットイラスト, flat illustration, simple 2d graphic style, solid color blocks, minimalist vector design, unshaded",
-        "✏️ シンプル線画＆ベタ塗り, clean line art with flat color fill, unlit, no shading, simple 2d cartoon design, flat color",
+        "✏️ シンプル線画＆ベタ塗り, clean line art with flat color fill, solid paint blocks, simple 2d cartoon design, flat color",
         "おとぎ話, Fairytale-like atmosphere",
         "3Dレンダ, 3D render",
         "サイバーパンク, cyberpunk art style, neon glow, dark contrast, futuristic elements, vivid lighting effects",
@@ -466,11 +466,52 @@
           }
         }
 
+        // Helper to generate precise dynamic tags for various animal onesie/kigurumi costumes
+        function getAnimalKigurumiTags(originalJa) {
+          const animalMap = [
+            { ja: /サメ|さめ|鮫/, tags: ["wearing a shark onesie costume", "hood shaped like a shark's open mouth with white cartoon teeth framing the face", "single prominent shark dorsal fin on the top of the hood", "cute shark tail on the back", "no cat ears", "no dog ears"] },
+            { ja: /クマ|くま|熊/, tags: ["wearing a fluffy bear onesie costume", "hood with round fuzzy bear ears framing the face", "cute round bear tail on the back", "no cat ears"] },
+            { ja: /ネコ|ねこ|猫|キャット/, tags: ["wearing a cozy cat onesie costume", "hood with pointed cat ears and cat face features framing the face", "long slender cat tail on the back"] },
+            { ja: /イヌ|いぬ|犬|ドッグ/, tags: ["wearing a dog onesie costume", "hood with floppy dog ears framing the face", "wagging dog tail on the back"] },
+            { ja: /ウサギ|うさぎ|兎|バニー/, tags: ["wearing a rabbit onesie costume", "hood with long floppy rabbit ears framing the face", "fluffy round bunny tail on the back"] },
+            { ja: /パンダ|ぱんだ/, tags: ["wearing a black and white panda onesie costume", "hood with round black panda ears framing the face", "panda color patterns"] },
+            { ja: /ペンギン|ぺんぎん/, tags: ["wearing a penguin onesie costume", "hood shaped like a penguin's head with a small yellow beak", "flipper-like sleeves", "no cat ears"] },
+            { ja: /恐竜|きょうりゅう|怪獣|かいじゅう|ダイナソー/, tags: ["wearing a green dinosaur onesie costume", "hood with spikes framing the face", "long dinosaur tail with spikes on the back"] },
+            { ja: /カエル|かえる|蛙/, tags: ["wearing a green frog onesie costume", "hood with big cartoon frog eyes on top"] },
+            { ja: /キツネ|きつね|狐/, tags: ["wearing a fluffy fox onesie costume", "hood with pointed fox ears framing the face", "big bushy fox tail on the back"] },
+            { ja: /コアラ|こあら/, tags: ["wearing a koala onesie costume", "hood with large fuzzy round koala ears framing the face"] },
+            { ja: /トラ|とら|虎/, tags: ["wearing a striped tiger onesie costume", "hood with tiger ears framing the face", "long striped tiger tail on the back"] },
+            { ja: /ライオン|らいおん/, tags: ["wearing a lion onesie costume", "hood with fluffy lion mane and ears framing the face"] },
+            { ja: /ヒツジ|ひつじ|羊/, tags: ["wearing a fluffy sheep onesie costume", "hood with curly sheep horns and ears framing the face"] },
+            { ja: /ハムスター|はむすたー/, tags: ["wearing a hamster onesie costume", "hood with small hamster ears framing the face", "tiny hamster tail"] },
+            { ja: /ひよこ|ヒヨコ/, tags: ["wearing a cute yellow chick onesie costume", "hood with tiny yellow beak and feather tuft on top"] },
+            { ja: /オオカミ|おおかみ|狼/, tags: ["wearing a wolf onesie costume", "hood with sharp wolf ears and wild fur texture framing the face", "bushy wolf tail"] },
+            { ja: /ブタ|ぶた|豚/, tags: ["wearing a pink pig onesie costume", "hood with round snout and pig ears framing the face", "curly pig tail"] }
+          ];
+
+          for (const item of animalMap) {
+            if (item.ja.test(originalJa)) {
+              return item.tags;
+            }
+          }
+
+          // デフォルト
+          return ["wearing a cute animal onesie costume", "onesie pajamas", "costume hood framing the face with animal ears", "kigurumi pajama suit", "no extra ears", "no double ears"];
+        }
+
         // 2. Apply high-fidelity Japanese subculture tag boosting
         function boostJapanesePromptNuances(originalJa, translatedEn) {
           let boosted = translatedEn;
+          
+          if (/着ぐるみ|きぐるみ|キグルミ/.test(originalJa)) {
+            const kigurumiTags = getAnimalKigurumiTags(originalJa);
+            const missingTags = kigurumiTags.filter(tag => !new RegExp(`\\b${tag.split(" ")[0]}\\b`, 'i').test(boosted));
+            if (missingTags.length > 0) {
+              boosted = `${boosted}, ${missingTags.join(", ")}`;
+            }
+          }
+
           const boosters = [
-            { ja: /着ぐるみ|きぐるみ/, tags: ["kigurumi", "onesie costume"] },
             { ja: /三白眼/, tags: ["sanpaku eyes", "sharp glare", "unfriendly glare"] },
             { ja: /目つき[がの]悪い/, tags: ["grumpy glare", "glaring eyes", "sharp look"] },
             { ja: /前髪ぱっつん|ぱっつん/, tags: ["straight bangs", "blunt bangs"] },
