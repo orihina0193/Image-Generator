@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> AI IMAGE GENERATOR v7.1</title>
+  <title>AI IMAGE GENERATOR v7.1</title>
   
   <!-- Tailwind CSS Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -78,9 +78,6 @@
       ]
     });
   </script>
-  
-  <!-- Load custom tags configuration from external file -->
-  <script src="tags.js"></script>
 </head>
 <body class="text-gray-200 min-h-screen relative font-sans Selection:bg-cyber-red/20 selection:text-white">
 
@@ -90,6 +87,11 @@
   <script type="text/babel" data-presets="classic-react">
     const { useState, useEffect } = React;
 
+    // 匿名枠のPollinationsは15秒に1リクエストまで。連打防止のクールダウン秒数
+    const COOLDOWN_SECONDS = 15;
+    // 画像の読み込みがこの時間を超えたら失敗扱いにする
+    const LOAD_TIMEOUT_MS = 120000;
+
     // Define the default complete tag dataset
     const DEFAULT_TAG_DATA = {
       "背景 (Background)": [
@@ -98,7 +100,29 @@
         "🌸 桜の舞い, soft pastel pink cherry blossom sakura petals flowing beautifully in the wind",
         "🌌 星海銀河, breathtaking cosmic stardust galaxy backdrop, vibrant nebula clouds",
         "💡 ボケライト, warm romantic golden background bokeh lights, soft dreamlike blur",
-        "🌅 黄金の夕焼け, magnificent crimson sunset horizon reflecting off gentle rolling ocean waves"
+        "🌅 黄金の夕焼け, magnificent crimson sunset horizon reflecting off gentle rolling ocean waves",
+        "⬜ 白背景, plain pure white background, clean studio backdrop",
+        "🟦 単色背景, solid flat single color background, no pattern",
+        "🎨 パステルグラデ, soft pastel gradient background, smooth blend of pink and light blue",
+        "🏫 夕暮れの教室, empty Japanese classroom at sunset, warm orange light through the windows, floating dust motes",
+        "🏫 学校の屋上, school rooftop under a bright blue sky with a chain-link fence and drifting clouds",
+        "🚉 田舎の無人駅, quiet rural Japanese train station in summer, towering white clouds, cicada season",
+        "⛩️ 夜の神社, shrine path lined with rows of red torii gates and glowing stone lanterns at night",
+        "🎆 夏祭り, Japanese summer festival at night, paper lanterns, food stalls and fireworks in the sky",
+        "🏯 和風庭園, serene Japanese garden with koi pond, stone lanterns and red maple trees",
+        "🌲 魔法の森, enchanted forest with glowing mushrooms and floating fireflies, soft mist",
+        "🌻 花畑, endless flower field under a blue sky, petals swaying in the breeze",
+        "🏖️ 南国ビーチ, tropical beach with turquoise water, white sand and palm trees",
+        "🌊 海中, underwater scene with sunbeams, coral reef and schools of colorful fish",
+        "❄️ 雪の村, snowy village at dusk, soft falling snow, warm glowing windows",
+        "🏞️ 山の湖, calm alpine lake reflecting snowy mountains at sunrise",
+        "☔ 雨の街角, rainy city street with umbrellas, wet reflections, soft gray light",
+        "🛋️ 居心地の良い部屋, cozy bedroom interior with warm lamp light, bookshelves and plants",
+        "🏰 中世の城下町, medieval fantasy town with cobblestone streets and timber-framed houses",
+        "🌆 未来都市, futuristic megacity skyline with towering skyscrapers, flying vehicles and holographic billboards",
+        "🏚️ 廃墟の街, ruined city overgrown with plants, quiet hazy atmosphere, post-apocalyptic",
+        "🎡 夕暮れの遊園地, amusement park at dusk with a glowing ferris wheel and colorful lights",
+        "🌈 虹の空, bright blue sky with fluffy clouds and a vivid rainbow"
       ],
       "スタイル (Styles)": [
         "写真風, photo-realistic",
@@ -169,7 +193,15 @@
         "🎒 セーラー服, modern custom academy school uniform, elegant ribbons and pleats",
         "⚔️ セイバーアーマー, radiant celestial silver armor, gold trim and futuristic power runes",
         "🕶️ サイバーバイザー, luminous neon smart glass visor, glowing digital interface holographic hud",
-        "🌂 狐面, traditional hand-painted Japanese kitsune fox mask worn on the side of the head"
+        "🌂 狐面, traditional hand-painted Japanese kitsune fox mask worn on the side of the head",
+        "🐻 着ぐるみパジャマ, wearing a cute animal onesie costume, kigurumi pajama suit, hood with animal ears framing the face",
+        "🧙 魔法使いローブ, flowing wizard robe with a pointed hat and a glowing magic staff",
+        "🖤 ゴスロリ, gothic lolita fashion, black lace dress with ribbons and a frilled headdress",
+        "🎧 パーカー&ヘッドホン, oversized hoodie with headphones around the neck, casual streetwear",
+        "🏫 ブレザー制服, school blazer uniform with a ribbon tie and pleated skirt",
+        "👗 ふんわりワンピース, light flowy white summer dress with a straw hat",
+        "🛡️ 王道ファンタジー鎧, classic fantasy knight armor with a cape and a sword",
+        "⛩️ 巫女服,traditional miko shrine maiden outfit, white haori and red hakama"
       ],
       "表情・目 (Expression & Eyes)": [
         "✨ オッドアイ, shimmering odd eyes, heterochromia with one golden and one deep sapphire eye",
@@ -177,7 +209,58 @@
         "😉 お茶目ウインク, cheerful winking facial expression, cute energetic vibe",
         "🔥 闘志 of 瞳, highly determined intense stare with subtle cyber power aura emitting from pupils",
         "😳 照れ顔, blushing cute red cheeks, bashful cute expression",
-        "😎 クール・不敵, self-confident grin, cool composed focus"
+        "😎 クール・不敵, self-confident grin, cool composed focus",
+        "🥺 うるうる涙目, teary sparkling eyes, trembling soft expression",
+        "😠 ぷくっと怒り顔, puffed cheeks, cute pouting angry expression",
+        "😆 大笑い, laughing out loud with a big open smile, joyful eyes",
+        "😴 眠そう, sleepy half-closed eyes, drowsy relaxed expression",
+        "😲 びっくり, surprised wide eyes, open mouth, startled expression",
+        "🫠 ジト目, jitome flat stare, unimpressed bored expression"
+      ],
+      "ポーズ・構図 (Pose & Shot)": [
+        "🧍 全身立ち絵, full body standing pose, front view, character design, plain background",
+        "🔍 バストアップ, bust-up portrait, upper body, facing the viewer",
+        "😊 顔アップ, close-up face portrait, detailed eyes",
+        "🏃 ダイナミック, dynamic action pose, dramatic perspective, motion lines",
+        "🙌 手を振る, waving hand, cheerful friendly pose",
+        "🪑 座りポーズ, sitting pose, relaxed casual posture",
+        "😴 寝そべり, lying down, relaxed pose",
+        "👀 振り返り, looking back over the shoulder",
+        "🧑 横顔, side profile, looking away into the distance",
+        "🔭 あおり構図, low angle shot looking up, dramatic sky behind",
+        "🦅 俯瞰, high angle bird's-eye view",
+        "🧩 キャラシート, character sheet, multiple views: front, side and back, expression variations, white background"
+      ],
+      "光・雰囲気 (Light & Mood)": [
+        "🌞 逆光, backlit, rim light, glowing outline, lens flare",
+        "🌅 ゴールデンアワー, golden hour sunlight, long soft shadows, warm tones",
+        "🌙 月明かり, soft moonlight, cool blue tones, quiet night mood",
+        "🕯️ 暖かい灯り, warm cozy lighting, soft golden glow",
+        "⚡ ドラマチック, dramatic cinematic lighting, high contrast, deep shadows",
+        "🌫️ 霧とやわらかい光, misty atmosphere, soft haze, volumetric light rays",
+        "🌈 ネオン, vivid neon glow, magenta and cyan lights",
+        "🎞️ レトロフィルム, retro film look, film grain, faded colors, vintage 90s",
+        "☁️ ふんわり淡い, soft pastel dreamy tone, low contrast, airy"
+      ],
+      "季節・天気 (Season & Weather)": [
+        "🌸 春, spring, cherry blossoms, fresh young greenery",
+        "🌻 夏, midsummer, strong sunlight, deep blue sky and tall clouds",
+        "🍁 秋, autumn, red and orange maple leaves, fallen leaves on the ground",
+        "⛄ 冬, winter, snow, visible breath in the cold air",
+        "🌧️ 雨, rain, falling raindrops, wet ground reflections",
+        "🌈 雨上がり, after the rain, rainbow, shiny puddles, fresh clear air",
+        "🌪️ 嵐, stormy sky, strong wind, dark swirling clouds",
+        "🎇 花火, colorful fireworks bursting in the night sky"
+      ],
+      "画質・仕上げ (Quality & Finish)": [
+        "✨ 高画質, highly detailed, sharp focus, high resolution, masterpiece",
+        "🖋️ 線くっきり, clean sharp lineart, crisp outlines",
+        "🎨 色鮮やか, vibrant saturated colors, rich color palette",
+        "🪶 やわらか淡色, soft muted colors, gentle shading",
+        "🧼 シンプル構図, simple clean background, minimal, centered composition",
+        "🖼️ 壁紙向き, wallpaper composition, wide scenic view, rich background detail",
+        "🧷 ステッカー風, sticker design, thick white border, die-cut, flat colors, white background",
+        "🏷️ アイコン向き, icon design, centered subject, bold simple shapes, plain background"
       ],
       "その他 (Others)": [
         "アイソメ, Isometric",
@@ -187,10 +270,8 @@
       ]
     };
 
-    // Merge window.TAG_DATA from external tags.js if present to preserve custom edits while keeping all categories
-    const TAG_DATA = window.TAG_DATA
-      ? { ...DEFAULT_TAG_DATA, ...window.TAG_DATA }
-      : DEFAULT_TAG_DATA;
+    // タグはこのファイルの DEFAULT_TAG_DATA だけで管理する（tags.js は不要）
+    const TAG_DATA = DEFAULT_TAG_DATA;
 
     // Self-contained Icon helper returning high quality crisp SVG path vectors
     function Icon({ name, className = "w-4 h-4" }) {
@@ -322,6 +403,104 @@
       );
     }
 
+    // 翻訳結果にそのタグがすでに含まれているか（タグ全体で判定）
+    function containsTag(text, tag) {
+      return text.toLowerCase().includes(tag.toLowerCase());
+    }
+
+    // Helper to generate precise dynamic tags for various animal onesie/kigurumi costumes
+    function getAnimalKigurumiTags(originalJa) {
+      const animalMap = [
+        { ja: /サメ|さめ|鮫/, tags: ["wearing a shark onesie costume", "hood shaped like a shark's open mouth with white cartoon teeth framing the face", "single prominent shark dorsal fin on the top of the hood", "cute shark tail on the back", "no cat ears", "no dog ears"] },
+        { ja: /クマ|くま|熊/, tags: ["wearing a fluffy bear onesie costume", "hood with round fuzzy bear ears framing the face", "cute round bear tail on the back", "no cat ears"] },
+        { ja: /ネコ|ねこ|猫|キャット/, tags: ["wearing a cozy cat onesie costume", "hood with pointed cat ears and cat face features framing the face", "long slender cat tail on the back"] },
+        { ja: /イヌ|いぬ|犬|ドッグ/, tags: ["wearing a dog onesie costume", "hood with floppy dog ears framing the face", "wagging dog tail on the back"] },
+        { ja: /ウサギ|うさぎ|兎|バニー/, tags: ["wearing a rabbit onesie costume", "hood with long floppy rabbit ears framing the face", "fluffy round bunny tail on the back"] },
+        { ja: /パンダ|ぱんだ/, tags: ["wearing a black and white panda onesie costume", "hood with round black panda ears framing the face", "panda color patterns"] },
+        { ja: /ペンギン|ぺんぎん/, tags: ["wearing a penguin onesie costume", "hood shaped like a penguin's head with a small yellow beak", "flipper-like sleeves", "no cat ears"] },
+        { ja: /恐竜|きょうりゅう|怪獣|かいじゅう|ダイナソー/, tags: ["wearing a green dinosaur onesie costume", "hood with spikes framing the face", "long dinosaur tail with spikes on the back"] },
+        { ja: /カエル|かえる|蛙/, tags: ["wearing a green frog onesie costume", "hood with big cartoon frog eyes on top"] },
+        { ja: /キツネ|きつね|狐/, tags: ["wearing a fluffy fox onesie costume", "hood with pointed fox ears framing the face", "big bushy fox tail on the back"] },
+        { ja: /コアラ|こあら/, tags: ["wearing a koala onesie costume", "hood with large fuzzy round koala ears framing the face"] },
+        { ja: /トラ|とら|虎/, tags: ["wearing a striped tiger onesie costume", "hood with tiger ears framing the face", "long striped tiger tail on the back"] },
+        { ja: /ライオン|らいおん/, tags: ["wearing a lion onesie costume", "hood with fluffy lion mane and ears framing the face"] },
+        { ja: /ヒツジ|ひつじ|羊/, tags: ["wearing a fluffy sheep onesie costume", "hood with curly sheep horns and ears framing the face"] },
+        { ja: /ハムスター|はむすたー/, tags: ["wearing a hamster onesie costume", "hood with small hamster ears framing the face", "tiny hamster tail"] },
+        { ja: /ひよこ|ヒヨコ/, tags: ["wearing a cute yellow chick onesie costume", "hood with tiny yellow beak and feather tuft on top"] },
+        { ja: /オオカミ|おおかみ|狼/, tags: ["wearing a wolf onesie costume", "hood with sharp wolf ears and wild fur texture framing the face", "bushy wolf tail"] },
+        { ja: /ブタ|ぶた|豚/, tags: ["wearing a pink pig onesie costume", "hood with round snout and pig ears framing the face", "curly pig tail"] }
+      ];
+
+      for (const item of animalMap) {
+        if (item.ja.test(originalJa)) {
+          return item.tags;
+        }
+      }
+
+      // デフォルト
+      return ["wearing a cute animal onesie costume", "onesie pajamas", "costume hood framing the face with animal ears", "kigurumi pajama suit", "no extra ears", "no double ears"];
+    }
+
+    // Apply high-fidelity Japanese subculture tag boosting
+    function boostJapanesePromptNuances(originalJa, translatedEn) {
+      let boosted = translatedEn;
+
+      if (/着ぐるみ|きぐるみ|キグルミ/.test(originalJa)) {
+        const kigurumiTags = getAnimalKigurumiTags(originalJa);
+        const missingTags = kigurumiTags.filter(tag => !containsTag(boosted, tag));
+        if (missingTags.length > 0) {
+          boosted = `${boosted}, ${missingTags.join(", ")}`;
+        }
+      }
+
+      const boosters = [
+        { ja: /三白眼/, tags: ["sanpaku eyes", "sharp glare", "unfriendly glare"] },
+        { ja: /目つき[がの]悪い/, tags: ["grumpy glare", "glaring eyes", "sharp look"] },
+        { ja: /前髪ぱっつん|ぱっつん/, tags: ["straight bangs", "blunt bangs"] },
+        { ja: /ジト目/, tags: ["jitome", "staring cold eyes", "uninterested look"] },
+        { ja: /ちびキャラ|ミニキャラ|デフォルメ|デフォルメキャラ/, tags: ["chibi character", "miniature style", "deformed chibi"] },
+        { ja: /八重歯/, tags: ["yaeba", "cute fang"] },
+        { ja: /アホ毛/, tags: ["ahoge", "antenna hair"] },
+        { ja: /ツインテール/, tags: ["twintails"] },
+        { ja: /ポニーテール/, tags: ["ponytail"] },
+        { ja: /セーラー服/, tags: ["sailor suit school uniform"] },
+        { ja: /メイド服|メイド/, tags: ["maid outfit"] },
+        { ja: /巫女服|巫女/, tags: ["miko outfit", "shrine maiden clothing"] },
+        { ja: /立ち絵/, tags: ["standing full body portrait", "character design sheet"] },
+        { ja: /水着|ビキニ/, tags: ["swimsuit", "bikini"] },
+        { ja: /ロリキャラ|ロリ/, tags: ["loli style girl"] },
+      ];
+
+      for (const booster of boosters) {
+        if (booster.ja.test(originalJa)) {
+          const missingTags = booster.tags.filter(tag => !containsTag(boosted, tag));
+          if (missingTags.length > 0) {
+            boosted = `${boosted}, ${missingTags.join(", ")}`;
+          }
+        }
+      }
+      return boosted;
+    }
+
+    // 画像をプリロードして、成功/失敗を必ず返す（失敗・タイムアウトでも止まらない）
+    function preloadImage(url) {
+      return new Promise((resolve) => {
+        let finished = false;
+        let timer = null;
+        const finish = (ok) => {
+          if (finished) return;
+          finished = true;
+          clearTimeout(timer);
+          resolve(ok);
+        };
+        const img = new Image();
+        timer = setTimeout(() => finish(false), LOAD_TIMEOUT_MS);
+        img.onload = () => finish(true);
+        img.onerror = () => finish(false);
+        img.src = url; // ハンドラ設定後に最後に代入
+      });
+    }
+
     function App() {
       const [prompt, setPrompt] = useState("");
       const [model, setModel] = useState("flux");
@@ -331,6 +510,7 @@
       const [activeCategory, setActiveCategory] = useState(Object.keys(TAG_DATA)[0]);
       const [selectedTagValues, setSelectedTagValues] = useState(new Set());
       const [isGenerating, setIsGenerating] = useState(false);
+      const [cooldown, setCooldown] = useState(0);
       const [loadingPhase, setLoadingPhase] = useState("");
       const [resultImage, setResultImage] = useState(null);
       const [resultDetails, setResultDetails] = useState(null);
@@ -349,6 +529,13 @@
         const interval = setInterval(updateTime, 1000);
         return () => clearInterval(interval);
       }, []);
+
+      // クールダウンのカウントダウン
+      useEffect(() => {
+        if (cooldown <= 0) return;
+        const timer = setTimeout(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+        return () => clearTimeout(timer);
+      }, [cooldown]);
 
       // Simulating loading phases
       useEffect(() => {
@@ -426,6 +613,8 @@
 
       // client-side direct generator - bypasses CORS with image pre-loads
       const handleGenerate = async () => {
+        if (isGenerating || cooldown > 0) return;
+
         if (!prompt.trim()) {
           triggerAlert("Please build or write a prompt first", "warning");
           return;
@@ -435,186 +624,102 @@
         setResultImage(null);
         setResultDetails(null);
 
-        const activeSeed = isManualSeed ? seed : Math.floor(Math.random() * 9999999);
-        if (!isManualSeed) {
-          setSeed(activeSeed);
-        }
-
-        let width = 1024;
-        let height = 1024;
-
-        if (aspectRatio === "16:9") { width = 1344; height = 768; }
-        else if (aspectRatio === "9:16") { width = 768; height = 1344; }
-        else if (aspectRatio === "4:3") { width = 1152; height = 864; }
-        else if (aspectRatio === "3:4") { width = 864; height = 1152; }
-
-        // 1. Detect Japanese and auto-translate via Google Translate client-side direct fetch
-        const hasJapanese = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(prompt);
-        let englishPrompt = prompt;
-
-        if (hasJapanese) {
-          try {
-            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=en&dt=t&q=${encodeURIComponent(prompt)}`);
-            if (res.ok) {
-              const data = await res.json();
-              if (data && data[0]) {
-                englishPrompt = data[0].map(x => x[0]).join("").trim();
-              }
-            }
-          } catch (err) {
-            console.warn("Client translation fallback error:", err);
-          }
-        }
-
-        // Helper to generate precise dynamic tags for various animal onesie/kigurumi costumes
-        function getAnimalKigurumiTags(originalJa) {
-          const animalMap = [
-            { ja: /サメ|さめ|鮫/, tags: ["wearing a shark onesie costume", "hood shaped like a shark's open mouth with white cartoon teeth framing the face", "single prominent shark dorsal fin on the top of the hood", "cute shark tail on the back", "no cat ears", "no dog ears"] },
-            { ja: /クマ|くま|熊/, tags: ["wearing a fluffy bear onesie costume", "hood with round fuzzy bear ears framing the face", "cute round bear tail on the back", "no cat ears"] },
-            { ja: /ネコ|ねこ|猫|キャット/, tags: ["wearing a cozy cat onesie costume", "hood with pointed cat ears and cat face features framing the face", "long slender cat tail on the back"] },
-            { ja: /イヌ|いぬ|犬|ドッグ/, tags: ["wearing a dog onesie costume", "hood with floppy dog ears framing the face", "wagging dog tail on the back"] },
-            { ja: /ウサギ|うさぎ|兎|バニー/, tags: ["wearing a rabbit onesie costume", "hood with long floppy rabbit ears framing the face", "fluffy round bunny tail on the back"] },
-            { ja: /パンダ|ぱんだ/, tags: ["wearing a black and white panda onesie costume", "hood with round black panda ears framing the face", "panda color patterns"] },
-            { ja: /ペンギン|ぺんぎん/, tags: ["wearing a penguin onesie costume", "hood shaped like a penguin's head with a small yellow beak", "flipper-like sleeves", "no cat ears"] },
-            { ja: /恐竜|きょうりゅう|怪獣|かいじゅう|ダイナソー/, tags: ["wearing a green dinosaur onesie costume", "hood with spikes framing the face", "long dinosaur tail with spikes on the back"] },
-            { ja: /カエル|かえる|蛙/, tags: ["wearing a green frog onesie costume", "hood with big cartoon frog eyes on top"] },
-            { ja: /キツネ|きつね|狐/, tags: ["wearing a fluffy fox onesie costume", "hood with pointed fox ears framing the face", "big bushy fox tail on the back"] },
-            { ja: /コアラ|こあら/, tags: ["wearing a koala onesie costume", "hood with large fuzzy round koala ears framing the face"] },
-            { ja: /トラ|とら|虎/, tags: ["wearing a striped tiger onesie costume", "hood with tiger ears framing the face", "long striped tiger tail on the back"] },
-            { ja: /ライオン|らいおん/, tags: ["wearing a lion onesie costume", "hood with fluffy lion mane and ears framing the face"] },
-            { ja: /ヒツジ|ひつじ|羊/, tags: ["wearing a fluffy sheep onesie costume", "hood with curly sheep horns and ears framing the face"] },
-            { ja: /ハムスター|はむすたー/, tags: ["wearing a hamster onesie costume", "hood with small hamster ears framing the face", "tiny hamster tail"] },
-            { ja: /ひよこ|ヒヨコ/, tags: ["wearing a cute yellow chick onesie costume", "hood with tiny yellow beak and feather tuft on top"] },
-            { ja: /オオカミ|おおかみ|狼/, tags: ["wearing a wolf onesie costume", "hood with sharp wolf ears and wild fur texture framing the face", "bushy wolf tail"] },
-            { ja: /ブタ|ぶた|豚/, tags: ["wearing a pink pig onesie costume", "hood with round snout and pig ears framing the face", "curly pig tail"] }
-          ];
-
-          for (const item of animalMap) {
-            if (item.ja.test(originalJa)) {
-              return item.tags;
-            }
-          }
-
-          // デフォルト
-          return ["wearing a cute animal onesie costume", "onesie pajamas", "costume hood framing the face with animal ears", "kigurumi pajama suit", "no extra ears", "no double ears"];
-        }
-
-        // 2. Apply high-fidelity Japanese subculture tag boosting
-        function boostJapanesePromptNuances(originalJa, translatedEn) {
-          let boosted = translatedEn;
-          
-          if (/着ぐるみ|きぐるみ|キグルミ/.test(originalJa)) {
-            const kigurumiTags = getAnimalKigurumiTags(originalJa);
-            const missingTags = kigurumiTags.filter(tag => !new RegExp(`\\b${tag.split(" ")[0]}\\b`, 'i').test(boosted));
-            if (missingTags.length > 0) {
-              boosted = `${boosted}, ${missingTags.join(", ")}`;
-            }
-          }
-
-          const boosters = [
-            { ja: /三白眼/, tags: ["sanpaku eyes", "sharp glare", "unfriendly glare"] },
-            { ja: /目つき[がの]悪い/, tags: ["grumpy glare", "glaring eyes", "sharp look"] },
-            { ja: /前髪ぱっつん|ぱっつん/, tags: ["straight bangs", "blunt bangs"] },
-            { ja: /ジト目/, tags: ["jitome", "staring cold eyes", "uninterested look"] },
-            { ja: /ちびキャラ|ミニキャラ|デフォルメ|デフォルメキャラ/, tags: ["chibi character", "miniature style", "deformed chibi"] },
-            { ja: /八重歯/, tags: ["yaeba", "cute fang"] },
-            { ja: /アホ毛/, tags: ["ahoge", "antenna hair"] },
-            { ja: /ツインテール/, tags: ["twintails"] },
-            { ja: /ポニーテール/, tags: ["ponytail"] },
-            { ja: /セーラー服/, tags: ["sailor suit school uniform"] },
-            { ja: /メイド服|メイド/, tags: ["maid outfit"] },
-            { ja: /巫女服|巫女/, tags: ["miko outfit", "shrine maiden clothing"] },
-            { ja: /立ち絵/, tags: ["standing full body portrait", "character design sheet"] },
-            { ja: /水着|ビキニ/, tags: ["swimsuit", "bikini"] },
-            { ja: /ロリキャラ|ロリ/, tags: ["loli style girl"] },
-          ];
-
-          for (const booster of boosters) {
-            if (booster.ja.test(originalJa)) {
-              const missingTags = booster.tags.filter(tag => !new RegExp(`\\b${tag.split(" ")[0]}\\b`, 'i').test(boosted));
-              if (missingTags.length > 0) {
-                boosted = `${boosted}, ${missingTags.join(", ")}`;
-              }
-            }
-          }
-          return boosted;
-        }
-
-        let finalPrompt = hasJapanese ? boostJapanesePromptNuances(prompt, englishPrompt) : prompt;
-
-        // 3. Map model param and specific tags based on selected engine model
-        let modelParam = "flux";
-        if (model === "stable-diffusion") {
-          modelParam = "turbo";
-          finalPrompt = `masterpiece, highly detailed, ${finalPrompt}`;
-        } else if (model === "flux-anime" || model === "any-dark" || model === "flux-3d") {
-          modelParam = model;
-          if (model === "any-dark") {
-            finalPrompt = `score_9, score_8_up, score_7_up, source_anime, masterpiece, aesthetic, detailed, ${finalPrompt}`;
-          } else if (model === "flux-3d") {
-            finalPrompt = `cute 3D clay toy, 3D chibi figurine of ${finalPrompt}, toy material, vibrant soft lighting, miniature style, detailed 3D render`;
-          } else if (model === "flux-anime") {
-            finalPrompt = `beautiful anime style illustration of ${finalPrompt}, high quality anime art, aesthetic, vibrant colors, clean lines`;
-          }
-        }
-
-        const directUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=${width}&height=${height}&seed=${activeSeed}&model=${modelParam}&nologo=true`;
-
         try {
-          // Preload image to ensure loading animation matches download complete
-          const img = new Image();
-          img.src = directUrl;
-          img.crossOrigin = "anonymous";
-          
-          img.onload = () => {
-            const engineLabelMap = {
-              "flux": { short: "FLUX.1 Schnell", full: "FLUX.1 Schnell (Pollinations Client-Side Direct)" },
-              "flux-anime": { short: "FLUX Anime", full: "FLUX Anime (2D Specialized Client-Side Direct)" },
-              "any-dark": { short: "Pony V6 / 2D", full: "Pony V6 / 2D Anime (Client-Side Direct)" },
-              "flux-3d": { short: "FLUX 3D Toy", full: "FLUX 3D Toy (Clay figurine Client-Side Direct)" },
-              "stable-diffusion": { short: "Stable Diffusion", full: "Stable Diffusion (SDXL Turbo Client-Side Direct)" }
-            };
+          const activeSeed = isManualSeed ? seed : Math.floor(Math.random() * 9999999);
+          if (!isManualSeed) {
+            setSeed(activeSeed);
+          }
 
-            const labelConfig = engineLabelMap[model] || engineLabelMap["flux"];
-            const engineLabelFull = labelConfig.full;
-            const engineLabelShort = labelConfig.short;
+          let width = 1024;
+          let height = 1024;
 
-            setResultImage(directUrl);
-            setResultDetails({
-              engine: engineLabelFull,
-              prompt: prompt,
-              seed: activeSeed,
-            });
+          if (aspectRatio === "16:9") { width = 1344; height = 768; }
+          else if (aspectRatio === "9:16") { width = 768; height = 1344; }
+          else if (aspectRatio === "4:3") { width = 1152; height = 864; }
+          else if (aspectRatio === "3:4") { width = 864; height = 1152; }
 
-            // Set History strip
-            const newItem = {
-              id: Math.random().toString(36).substring(2, 9),
-              imageUrl: directUrl,
-              prompt: prompt,
-              engine: engineLabelShort,
-              aspectRatio: aspectRatio,
-              seed: activeSeed,
-              timestamp: new Date().toLocaleTimeString(),
-            };
-            setHistory(prev => [newItem, ...prev].slice(0, 10));
-            setIsGenerating(false);
+          // 1. Detect Japanese and auto-translate via Google Translate client-side direct fetch
+          const hasJapanese = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(prompt);
+          let englishPrompt = prompt;
+
+          if (hasJapanese) {
+            try {
+              const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=en&dt=t&q=${encodeURIComponent(prompt)}`);
+              if (res.ok) {
+                const data = await res.json();
+                if (data && data[0]) {
+                  englishPrompt = data[0].map(x => x[0]).join("").trim();
+                }
+              }
+            } catch (err) {
+              console.warn("Client translation fallback error:", err);
+            }
+          }
+
+          // 2. Apply high-fidelity Japanese subculture tag boosting
+          let finalPrompt = hasJapanese ? boostJapanesePromptNuances(prompt, englishPrompt) : prompt;
+
+          // 3. Map model param and specific tags based on selected engine model
+          let modelParam = "flux";
+          if (model === "stable-diffusion") {
+            modelParam = "turbo";
+            finalPrompt = `masterpiece, highly detailed, ${finalPrompt}`;
+          } else if (model === "flux-anime" || model === "any-dark" || model === "flux-3d") {
+            modelParam = model;
+            if (model === "any-dark") {
+              finalPrompt = `score_9, score_8_up, score_7_up, source_anime, masterpiece, aesthetic, detailed, ${finalPrompt}`;
+            } else if (model === "flux-3d") {
+              finalPrompt = `cute 3D clay toy, 3D chibi figurine of ${finalPrompt}, toy material, vibrant soft lighting, miniature style, detailed 3D render`;
+            } else if (model === "flux-anime") {
+              finalPrompt = `beautiful anime style illustration of ${finalPrompt}, high quality anime art, aesthetic, vibrant colors, clean lines`;
+            }
+          }
+
+          const directUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=${width}&height=${height}&seed=${activeSeed}&model=${modelParam}&nologo=true`;
+
+          // Preload image: 成功/失敗/タイムアウトのどれでも必ず結果が返る
+          const ok = await preloadImage(directUrl);
+
+          if (!ok) {
+            triggerAlert("生成に失敗したよ。少し待ってからもう一度試してね", "warning");
+            return;
+          }
+
+          const engineLabelMap = {
+            "flux": { short: "FLUX.1 Schnell", full: "FLUX.1 Schnell (Pollinations Client-Side Direct)" },
+            "flux-anime": { short: "FLUX Anime", full: "FLUX Anime (2D Specialized Client-Side Direct)" },
+            "any-dark": { short: "Pony V6 / 2D", full: "Pony V6 / 2D Anime (Client-Side Direct)" },
+            "flux-3d": { short: "FLUX 3D Toy", full: "FLUX 3D Toy (Clay figurine Client-Side Direct)" },
+            "stable-diffusion": { short: "Stable Diffusion", full: "Stable Diffusion (SDXL Turbo Client-Side Direct)" }
           };
 
-          img.onerror = () => {
-            throw new Error("Local image load state exception");
-          };
+          const labelConfig = engineLabelMap[model] || engineLabelMap["flux"];
 
+          setResultImage(directUrl);
+          setResultDetails({
+            engine: labelConfig.full,
+            prompt: prompt,
+            seed: activeSeed,
+          });
+
+          // Set History strip
+          const newItem = {
+            id: Math.random().toString(36).substring(2, 9),
+            imageUrl: directUrl,
+            prompt: prompt,
+            engine: labelConfig.short,
+            aspectRatio: aspectRatio,
+            seed: activeSeed,
+            timestamp: new Date().toLocaleTimeString(),
+          };
+          setHistory(prev => [newItem, ...prev].slice(0, 10));
         } catch (error) {
           console.error(error);
-          triggerAlert("API connection error. Setting placeholder fallback...", "warning");
-          const fallbackUrl = `https://picsum.photos/seed/${activeSeed}/${width}/${height}`;
-          setResultImage(fallbackUrl);
-          setResultDetails({
-            engine: "Picsum Static Gateway (Temporary Recovery)",
-            prompt: prompt,
-            seed: activeSeed
-          });
+          triggerAlert("予期しないエラーが起きたよ。もう一度試してね", "warning");
+        } finally {
+          // 成功でも失敗でも必ずここを通るので、ぐるぐるが止まらなくなることはない
           setIsGenerating(false);
+          setCooldown(COOLDOWN_SECONDS);
         }
       };
 
@@ -639,6 +744,8 @@
         triggerAlert("Restored design presets", "success");
       };
 
+      const generateDisabled = isGenerating || cooldown > 0;
+
       return (
         <div className="min-h-screen flex flex-col items-center justify-start lg:py-10 p-4 relative font-sans text-gray-200">
           
@@ -649,7 +756,7 @@
           <div className="w-full max-w-7xl flex flex-col md:flex-row items-center justify-between text-xs tracking-widest text-gray-500 font-mono mb-6 border-b border-cyber-border pb-3 px-2 gap-2 border-slate-800 pb-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-cyber-red animate-pulse-slow" />
-              <span>SYSTEM MODE: GITHUB SERVERLESS STANDALONE v7.0</span>
+              <span>SYSTEM MODE: GITHUB SERVERLESS STANDALONE v7.1</span>
             </div>
             <div className="flex items-center gap-2">
               <Icon name="clock" className="w-3.5 h-3.5 text-cyber-red" />
@@ -668,7 +775,7 @@
                   Serverless Client
                 </div>
                 <h1 className="font-display font-bold text-2xl md:text-3xl tracking-tight text-white flex items-center gap-2 mb-2">
-                  ABINOXX ENGINE <span className="text-cyber-red font-mono text-lg font-normal tracking-wide">v7.0 Standalone</span>
+                  ABINOXX ENGINE <span className="text-cyber-red font-mono text-lg font-normal tracking-wide">v7.1 Standalone</span>
                 </h1>
                 <p className="text-sm text-gray-400">
                   GitHub-ready static system. This edition is optimized for client-side execution using direct Pollinations API integration.
@@ -919,19 +1026,23 @@
                 {/* Actions Trigger */}
                 <button
                   onClick={handleGenerate}
-                  disabled={isGenerating}
+                  disabled={generateDisabled}
                   className={`w-full font-display font-medium text-white text-base py-3.5 rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-lg active:scale-[98%] ${
-                    isGenerating 
+                    generateDisabled 
                       ? "bg-slate-800 text-gray-500 cursor-not-allowed" 
                       : "bg-gradient-to-r from-red-600 to-amber-700 hover:from-red-500 hover:to-amber-600 cursor-pointer"
                   }`}
                 >
                   {isGenerating ? (
                     <Icon name="refresh" className="w-5 h-5 animate-spin" />
+                  ) : cooldown > 0 ? (
+                    <Icon name="clock" className="w-5 h-5" />
                   ) : (
                     <Icon name="sparkles" className="w-5 h-5" />
                   )}
-                  <span className="font-semibold tracking-wider">GENERATE ILLUST</span>
+                  <span className="font-semibold tracking-wider">
+                    {isGenerating ? "GENERATING..." : cooldown > 0 ? `WAIT ${cooldown}s` : "GENERATE ILLUST"}
+                  </span>
                 </button>
 
               </div>
